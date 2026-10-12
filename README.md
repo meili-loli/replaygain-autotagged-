@@ -1,4 +1,4 @@
-直接复制下面全部，粘贴到 GitHub 编辑器里就行。
+
 
 ```markdown
 # ねこちゃんの ReplayGain 自动打标机 🐾
