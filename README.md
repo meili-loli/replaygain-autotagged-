@@ -1,7 +1,4 @@
-
-
-```markdown
-# ねこちゃんの ReplayGain 自动打标机 🐾
+ねこちゃんの ReplayGain 自动打标机 🐾
 
 > 「にゃ〜、お兄さん、毎回手動で ReplayGain 打つの大変でしょ？ ねこが代わりにやってあげるにゃ！」
 
