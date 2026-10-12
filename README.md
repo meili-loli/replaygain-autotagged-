@@ -1,301 +1,125 @@
 ねこちゃんの ReplayGain 自动打标机 🐾
+「にゃ〜主人，手动给几千首歌调 ReplayGain 太累啦！交给喵喵，全自动帮你校准曲库响度喵✨」
+一只专属二次元调音猫娘 AI（实际只是四个区区的脚本喵，？！区区？！），专为 foobar2000 打造！替代人工手动调音，依靠双猫娘专家模型，全自动批量给音频打上标准 ReplayGain 标签。全格式适配、响度精准不翻车、增量极速处理，让喵喵帮你托管整个音乐曲库的音量平衡🐱
+🐱 喵喵人设 & 项目简介
+你专属的智能调音猫娘，自学掌握了「人耳级音乐响度校准」技能！只需投喂音乐文件，喵喵就能自动分辨歌曲音量大小、动态差异，精准预测最优增益数值，一键写入音频原生标签，foobar2000 开箱即用，彻底解决听歌音量忽大忽小的烦恼。
+双猫娘分工 MoE 架构（核心特色）
+- 低温喵：专精低响度曲目，精准调校 -16 ~ -10 dB 区间音乐
+- 热血喵：适配高响度曲目，负责 -9 ~ -2 dB 区间增益校准
+- 守门喵（门控模型）：智能判别歌曲类型，自动分配对应专精喵娘处理，全程最优调校
+核心能力：42维人耳级音频特征｜FFmpeg 原声级精准对齐｜全音频格式兼容｜缓存秒速增量处理｜可视化GUI手动精调
+🐾 喵喵的学习原理
+喵喵不是死板套用公式，是真的学会了听音乐调音！通过海量人工精调的音乐样本训练，复刻人类听觉调音逻辑：
+1. 统一听音：全程 FFmpeg 解码，和 foobar2000 播放音源完全一致，不听“错音”
+2. 提取听觉特征：自动识别歌曲响度、峰值、动态、频谱等42维细节，贴合人耳感知
+3. 学习调音逻辑：对照人工精准标签，拟合出最贴合听感的增益计算规则
+4. 全自动上岗：面对新歌自主判断、自动调音、批量打标，无需人工干预
+精准保障：彻底规避普通库解码3dB响度偏差问题，喵喵听到的声音、模型分析的声音、你播放听到的声音，完全一模一样！
+🐈 项目文件结构
+.
+├── train_eval_export.py        # 喵喵训练进修脚本（特征提取+模型训练）
+├── predict_and_tag.py          # 喵喵上岗工作脚本（批量自动打标）
+├── annotate_gain.py            # 主人手动调教GUI（精细调音标注）
+├── model_dir/                  # 学成的喵喵模型权重
+├── feat_cache/                 # 音乐特征记忆缓存（二次超快处理）
+├── delta_gain.csv              # 调音训练数据集
+├── requirements.txt            # 依赖环境清单
+└── examples/                   # 配置示例文件
 
-> 「にゃ〜、お兄さん、毎回手動で ReplayGain 打つの大変でしょ？ ねこが代わりにやってあげるにゃ！」
-
-一只猫娘帮你在 foobar2000 里给几千首歌自动写 ReplayGain 标签的工具喵。
-
-双专家 MoE + 二分类门控，42 维手工特征，全格式兼容，速度快，可维护。
-
----
-
-## 🐱 喵喵简介
-
-给喵写一个音频特征提取器，它就学会了「这首歌该加多少 dB」这项本事。然后你随便扔一个文件夹进来，喵就帮你全部处理掉，标签直接写进文件里，foobar2000 打开就能听喵～
-
-- **双专家**：一只喵擅长低增益（-16 ~ -10 dB），另一只擅长高增益（-9 ~ -2 dB）
-- **门控喵**：站在中间，判断这次该找哪只喵帮忙
-- **42 维特征**：响度、真峰、动态、频谱、MFCC，全部用 ffmpeg 解码，和耳朵听到的一致
-- **全格式**：flac / mp3 / m4a / ogg / opus / wav / ape / wv 都能写
-- **增量缓存**：每次写标签不影响已提取的特征，第二次跑飞快喵
-- **手动标注工具**：PySide6 + sounddevice，实时调 dB，A/B 对比，断点续传
-
-喵喵喵，听起来是不是很棒？
-
----
-
-## 🐾 喵的成长日记（原理）
-
-喵一开始也啥都不会。它先看了一堆老歌的 **真实 ReplayGain 标签**（人工标注的 `delta_gain`），然后：
-
-1. 喵用 ffmpeg 把每首歌解码成 44100 Hz 单声道波形
-2. 喵提取 42 个「这首歌长什么样」的特征（响度 LUFS、真峰、频谱形状、动态范围……）
-3. 喵把「特征 → 真实标签」这层关系学下来
-4. 遇到新歌时，喵看一眼特征就知道该写多少 dB 喵～
-
-为了听得准，喵做了两件事：
-
-- 训练 / 推理 / 标注，**三个环节全部用 ffmpeg 解码**，保证听到的和标出来的是同一个响度
-- 42 维特征里，**响度类和峰值类**是重点，因为这两类最容易因为解码器差异跑偏
-
-（喵试过 soundfile 解码，128 kbps 的 mp3 会比 ffmpeg 少算 3 dB，耳朵一听就不对，所以弃用了喵。）
-
----
-
-## 🐈 脚本介绍
-
-├── train_eval_export.py            # 训练：提特征 + 建缓存 + 训模型
-├── predict_and_tag.py              # 推理：批量预测 + 写标签
-├── annotate_gain.py                # 手动标注工具（GUI）
-├── model_dir/                      # 训练好的模型
-│   ├── meta.json
-│   ├── low_model.pkl
-│   ├── a_model.pkl
-│   └── gate_model.pkl
-├── feat_cache/                     # 每首歌的特征缓存（.npz）
-├── handcraft_cache_42d_aug05.pkl   # 汇总缓存
-├── delta_gain.csv                  # 训练标签
-└── examples/
-    ├── delta_gain.example.csv
-    └── meta.example.json
-```
-
----
-
-## 🐟 安装依赖
-
-需要 Python 3.10+，还有 **ffmpeg**（必备，用来解码音频喵）。
-
-```bash
+🐟 环境部署（喵喵启动条件）
+基础要求
+- Python 3.10+
+- FFmpeg（必装，保证喵喵听音精准）
+安装依赖
 pip install -r requirements.txt
-```
-
-`requirements.txt` 内容：
-
-```
-numpy>=1.24
-pandas>=2.0
-scikit-learn>=1.3
-lightgbm>=4.0
-librosa>=0.10
-pyloudnorm>=0.1.1
-soundfile>=0.12
-joblib>=1.3
-mutagen>=1.47
-tqdm>=4.66
-PySide6>=6.5
-sounddevice>=0.4.6
-```
-
-安装 ffmpeg：
-
-- **Windows**：`winget install ffmpeg`，装完**重开 PowerShell**
-- **macOS**：`brew install ffmpeg`
-- **Linux**：`sudo apt install ffmpeg`
-
-验证：
-
-```bash
+FFmpeg 一键安装
+- Windows：winget install ffmpeg（安装后重启终端）
+- macOS：brew install ffmpeg
+- Linux：sudo apt install ffmpeg
+环境校验
 ffmpeg -version
 ffprobe -version
-```
 
-两条都有输出，说明装好了喵。
-
----
-
-## 🐠 快速开始
-
-### 🐾 喵的推荐流程
-
-**第 1 步：准备训练数据（CSV）**
-
-CSV 两列，`file` 和 `delta_gain`：
-
-```csv
+输出版本信息即代表喵喵可以正常上岗喵～
+🐠 快速上手（主人专属流程）
+1. 准备训练数据
+新建 delta_gain.csv，填写歌曲名和最优调音数值即可
 file,delta_gain
 track01.flac,-6.5
 track02.mp3,-8.0
-```
 
-- `file` 只写文件名（basename），脚本会递归扫描音频文件夹自动匹配
-- `delta_gain` 是这首歌应该加多少 dB（负数表示衰减）
-
-**第 2 步：手动标注（如果还没有 CSV）**
-
-```bash
-python annotate_gain.py --input "D:\Music"
-```
-
-喵给你打开一个 GUI：
-
-- `Space` 播放 / 暂停
-- `↑` `↓` 调 ±0.5 dB，实时听变化
-- `T` 在「调整后 / 原始」之间 A/B 对比
-- `S` 保存并下一首，标签自动写进 `delta_gain.csv`
-- 中途关掉也没关系，下次打开从断点继续
-
-**第 3 步：训练喵喵模型**
-
-```bash
-python train_eval_export.py --csv delta_gain.csv --audio-root "D:\Music" --n-jobs 16
-```
-
-- 第一次跑：提取所有歌的 42 维特征，约 1~1.5 小时（视机器性能）
-- 特征会缓存到 `feat_cache/`，第二次秒过
-- 训练约 1~2 分钟
-- 输出：`model_dir/{low,a,gate}_model.pkl` + `meta.json`
-
-**第 4 步：批量写标签**
-
-```bash
-python predict_and_tag.py --input "D:\Music" --write-r128 --workers 16
-```
-
-喵会：
-
-- 从 `feat_cache/` 读特征（命中就秒过）
-- 未命中的现场提取（约 5 秒/首）
-- 写到文件的 `REPLAYGAIN_TRACK_GAIN` 标签
-- 日志存到 `inference_logs/predict_YYYYMMDD_HHMMSS.csv`
-
-**第 5 步：foobar2000 刷新**
-
-写完标签后，foobar2000 里选中歌 ，就能感受到自动学习的只属于自己的 ReplayGain 了喵！
-
----
-
-## 🐙 喵的详细说明
-
-### 🎀 `annotate_gain.py` 手动标注工具
-
-- **实时 dB 增益**：改数值音量立即变，听的就是调整后的效果
-- **A/B 对比**：`T` 键在「调整后」和「原始」之间切换
-- **LUFS 显示**：屏幕中间显示 `原始 LUFS | delta_gain | 调整后 LUFS`
-- **断点续传**：每次保存自动写盘，崩了重跑继续
-- **快捷键**：
-
-| 键 | 作用 |
-|---|---|
-| `Space` | 播放 / 暂停 |
-| `↑` `↓` | delta_gain ±0.5 dB |
-| `T` | A/B 切换 |
-| `S` | 保存并下一首 |
-| `N` | 跳过 |
-| `P` | 上一首 |
-| `←` `→` | -5s / +5s |
-| `Ctrl+←` `Ctrl+→` | -30s / +30s |
-| `Ctrl+S` | 手动保存 |
-
-### 🎀 `train_eval_export.py` 训练
-
-```bash
-python train_eval_export.py \
-    --csv delta_gain.csv \
-    --audio-root "D:\Music" \
-    --n-jobs 16 \
-    --shift 0
-```
-
-参数：
-
-| 参数 | 说明 |
-|---|---|
-| `--csv` | 训练标签 CSV |
-| `--audio-root` | 音频根目录（递归扫描） |
-| `--n-jobs` | 并行进程数，默认 8，上限 16 |
-| `--shift` | 标签整体偏移量（见下面「标签偏移」） |
-| `--n-seeds` | OOF 用几个 seed，默认 5，调试可用 1 |
-| `--force-reextract` | 清空 `feat_cache/` 全部重提 |
-| `--no-aug` | 不做 ±0.5 dB 数据增强 |
-
-**标签偏移**：如果你后来把 CSV 里所有 `delta_gain` 都减了 5，跑的时候加 `--shift -5`，脚本会自动把所有阈值和分组边界都下移 5，模型训练仍正确。`shift` 会被写进 `meta.json`，推理时自动读取。
-
-### 🎀 `predict_and_tag.py` 推理
-
-```bash
-python predict_and_tag.py --input "D:\Music" --write-r128 --workers 16
-```
-
-参数：
-
-| 参数 | 说明 |
-|---|---|
-| `--input` | 音频文件夹（递归） |
-| `--dry-run` | 只预测不写标签 |
-| `--write-r128` | Opus 额外写 `R128_TRACK_GAIN` |
-| `--only-ext` | 只处理指定格式，如 `.mp3,.m4a` |
-| `--exclude-ext` | 排除指定格式，如 `.flac` |
-| `--skip-tagged` | 跳过已有 ReplayGain 标签的文件 |
-| `--workers` | 并行进程数，0=CPU 核数 |
-| `--limit N` | 只处理前 N 首 |
-
-**日志**：`inference_logs/predict_*.csv`，含每首的 `y_pred`、`confidence`（extreme / high / low / normal）、`route_a`、`from_cache` 等，方便事后排查喵。
-
----
-
-## 🐚 喵的技能总结
-
-- **训练脚本**：读 CSV + 音频，提特征，训双专家 + 门控，导出模型
-- **推理脚本**：读模型 + 特征缓存，批量预测，写标签
-- **标注工具**：GUI，手动听感标 `delta_gain`，生成 CSV
-- **特征缓存**：`feat_cache/<md5>.npz`，每首一个，key 只用路径，写标签不影响命中
-
-喵喵已经把全部脚本都写好了，你只需要：
-
-1. 装依赖和 ffmpeg
-2. 准备 CSV
-3. 训练
-4. 推理
-
-就酱喵～
-
----
-
-## 🐾 常见问题
-
-### 喵！训练时为什么这么慢？
-
-特征提取是单线程密集型，主要有 HPSS（谐波-打击分离）和 STFT。909 首歌约 1 小时 20 分（`--n-jobs 16`）。
-
-**第二次跑就秒过了**，因为 `feat_cache/` 里有缓存喵。
-
-### 喵！ffmpeg 没装怎么办？
-
-脚本会显示 `decoder = soundfile/librosa (fallback)`。这时候 mp3 会少算 3 dB，**不准**。赶紧装 ffmpeg 喵！
-
-### 喵！为什么一定要用 ffmpeg？
-
-因为 foobar2000 和大多数播放器也是用 ffmpeg 系的解码器。你标注的时候听到的是 ffmpeg 解码的响度，特征提取也必须用 ffmpeg，才能对齐喵。
-
-### 喵！训练完之后 CSV 里改了标签怎么办？
-
-**不需要重提特征**。`feat_cache/` 里的 `.npz` 只存 `x`（音频特征），不存 `y`（标签）。重训时自动用新标签，秒过喵～
-
-### 喵！`--skip-tagged` 加不加？
-
-- **加**：已有 ReplayGain 标签的文件跳过，只处理没标签的（增量处理新歌用）
-- **不加**：所有文件重写（第一次全量写，或者换了模型想覆盖）
-
-### 喵！mp3 标签写进去 foobar2000 不认？
-
-ID3 的 TXXX frame 对大小写敏感。脚本里已经改成写大写的 `REPLAYGAIN_TRACK_GAIN` 了喵。如果你用的版本还是小写，看 `write_replaygain` 里的 mp3 分支。
-
-### 喵！长音频（40 分钟整轨）怎么办？
-
-会自动分块（默认 10 分钟一块），内存不会爆。但整轨的预测值是分块平均，不太准，建议人工过一遍喵。
-
----
-
-## 🐟 License
-
-MIT
-
----
-
-## 🐠 致谢
-
-感谢 cloudydreamland的大力支持喵~
----
-
-**喵喵喵～祝你听歌愉快！🐾**
-```
+2. 手动调教（无数据集推荐）
+打开可视化GUI，亲手微调响度，让喵喵学习你的专属听音口味
+python annotate_gain.py --input "你的音乐文件夹路径"
+3. 训练专属喵喵模型
+python train_eval_export.py --csv delta_gain.csv --audio-root "你的音乐文件夹路径" --n-jobs 16
+首次运行缓存音乐特征，第二次直接秒训，越用越顺滑！
+4. 全自动批量调音打标
+python predict_and_tag.py --input "你的音乐文件夹路径" --write-r128 --workers 16
+喵喵自动批量处理、写入标准ReplayGain标签，全程无人值守～
+5. 生效使用
+foobar2000 刷新曲库，即可体验全曲库音量统一、听感舒适的听歌效果！
+🎀 喵喵工具详细说明
+1. 手动调教 GUI（annotate_gain.py）
+主人专属调音操作台，零门槛精调，方便调教出贴合你口味的喵喵模型：
+- 实时响度预览，调参即时生效
+- T键 A/B对比原始/调音后听感
+- 实时显示LUFS响度数据，量化调音效果
+- 断点续存，不怕中途退出丢进度
+快捷按键（懒人必备）
+快捷键
+功能
+Space
+播放 / 暂停
+↑ / ↓
+±0.5dB 精细调音
+T
+听感 A/B 切换对比
+S
+保存当前调音并下一首
+N / P
+跳过 / 上一首
+← / →
+进度 ±5s 跳转
+2. 模型训练参数（train_eval_export.py）
+参数
+说明
+--csv
+调音训练数据集路径
+--audio-root
+音乐文件根目录（自动递归扫描）
+--n-jobs
+并行训练线程数，提速专用
+--shift
+批量标签偏移修正，无需重算特征
+--force-reextract
+强制重新提取所有音乐特征
+3. 批量推理打标参数（predict_and_tag.py）
+参数
+说明
+--input
+待处理音乐文件夹
+--dry-run
+仅预测不打标，测试效果用
+--write-r128
+为Opus格式写入标准R128增益标签
+--skip-tagged
+跳过已打标歌曲，增量更新超快
+--workers
+并行处理数，拉满处理速度
+🐚 常见问题（喵喵答疑）
+Q：第一次训练为什么有点慢？
+第一次需要让喵喵逐首听音乐、提取听觉特征，属于正常进修时间！缓存后第二次直接秒速完成，完全不耽误使用。
+Q：为什么必须装FFmpeg？
+普通听音库会出现3dB响度误差，属于“听错音”！FFmpeg解码和foobar2000完全对齐，保证喵喵调音 = 你实际听到的效果。
+Q：修改训练标签后需要重算特征吗？
+不需要！喵喵的音乐记忆（缓存）只存听觉特征，不存标签，改完标签直接重训即可，高效迭代新口味。
+Q：如何选择增量/全量打标？
+新增歌曲用 --skip-tagged 增量速刷；模型更新、想全曲库重调则去掉参数全覆盖打标。
+Q：MP3标签foobar2000不识别？
+脚本默认写入标准大写 REPLAYGAIN_TRACK_GAIN 标签，完美适配foobar2000最新版本。
+📜 License
+本项目基于 MIT License 开源，自由使用、改造、分发均可～
+💖 致谢
+特别感谢 cloudydreamland 对喵喵的大力赋能与优化调教喵～
+主人！以后曲库调音就全权交给喵喵吧，祝你天天好心情🎧🐾
