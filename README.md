@@ -299,12 +299,3 @@ MIT
 
 **喵喵喵～祝你听歌愉快！🐾**
 ```
-
----
-
-粘贴进编辑器后，拉到页面底部：
-
-1. **Commit message** 填个 `add README` 之类的
-2. 点绿色 **Commit changes** 按钮
-
-README 就上线了喵～
