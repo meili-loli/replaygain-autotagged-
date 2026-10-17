@@ -1,43 +1,63 @@
-# 🐱 ReplayGain-nyan
 
-> 「让一千首歌的响度，都乖顺得像猫猫被摸头一样～」ฅ(=ↀωↀ=)ฅ
+# ねこちゃんの ReplayGain 自动打标机 🐾
 
-**ReplayGain-nyan** 是一个专门给你的私有音乐库自动打 ReplayGain 标签的小工具。
-它不靠固定的 −18 LUFS 死阈值，而是**学你自己的耳朵**：你标过哪几首"该衰减多少"，
-它就学会"什么样的歌该衰减多少"，然后对着全库一首一首地贴标签。
+> 「にゃ〜、お兄さん、毎回手動で ReplayGain 打つの大変でしょ？ ねこが代わりにやってあげるにゃ！」
+> 「……でも今回のねこ、ちょっとだけ賢くなったにゃ。前のねこは迷ってたけど、今度はちゃんと学んだにゃよ？」ฅ(=ↀωↀ=)ฅ
 
-> 主人只要标个几十首就够了，剩下的交给猫猫！喵～ (｡•̀ᴗ-)✧
+一只猫娘帮你在 foobar2000 里给几千首歌自动写 ReplayGain 标签的工具喵。
+**这是第二代**——第一代的双专家架构被验明是负收益，这一代换成了「单 LGB 回归 + 组信号两阶段」。
 
 ---
 
-## ✨ 它到底会做什么
+## ✨ 这一代和上一代的区别（喵的进化史）
 
-| | 功能 | 一句话 |
+| | 第一代（双专家 MoE + 门控） | **第二代（本仓库）** |
 |---|---|---|
-| 🔍 | **自动提取特征** | 42 维响度 / 频谱 / 动态特征，ffmpeg 解码，不吃内存 |
-| 🧠 | **学习你的听感** | LightGBM 回归，学的是「这首歌你希望衰减多少 dB」 |
-| 🏷️ | **批量打标签** | 直接写 `REPLAYGAIN_TRACK_GAIN` / `_PEAK`，foobar2000 立刻认 |
-| 🎧 | **内置标注器** | 带 A/B 试听、精确响度对齐的 PyQt 标注工具，标一首只花你 20 秒 |
-| 🩺 | **标签体检** | 用特征邻域找出「标注时手滑了」的歌，只让你复核那一小撮 |
-| 🎯 | **组信号两阶段** | 同专辑 / 同艺人的预测当特征，猫猫会看着邻居来决定✨ |
+| 架构 | 低增益专家 + 高增益专家 + 二分类门控 | 单 LGB 回归 + 组信号两阶段 |
+| MAE | 0.940 | **0.666** |
+| 误差 > 2 dB | 95 首 | **10 首** |
+| 最大误差 | 5.94 dB | **3.80 dB** |
+| 评估协议 | 朴素 KFold（**有泄漏**） | GroupKFold（干净） |
+
+> 喵要先坦白一件事：上一代 README 里那个 **MAE 0.383 是测错的**喵……
+> 数据增强样本漏进了训练集，虚报了 0.42 dB。真实是 0.940。喵鞠躬道歉 (´･_･`)
+
+**这一代做对了什么？**
+- 🔍 承认双专家架构是负收益（`-10 ≤ y < -9` 那段两个专家都没训过，是个空洞喵）
+- 🧪 用 GroupKFold 锁住同一首歌的增强副本，杜绝泄漏
+- 🎯 发现真正的瓶颈不是模型，也不是数据量，而是**缺独立信息**
+- 🐈 加了「组信号」——同专辑 / 同艺人里其他歌的预测当特征，**逐 seed 配对 10/10 全胜**
+
+---
+
+## 🐱 喵喵现在会什么
+
+给喵喂一批你亲手标过的歌，它就学会了「什么样的歌该衰减多少 dB」。然后你扔一个文件夹进来，喵全部处理掉，标签直接写进文件，foobar2000 打开就能听喵～
+
+- **单 LGB 回归**：42 维特征 → 一个模型，比双专家 + 门控简单得多，效果还更好喵
+- **组信号（新）**：同目录 / 同专辑 / 同艺人里**其他歌的预测均值**，6 维特征喂给第二个模型
+- **标签体检**：用特征邻域找出「标注时手滑了」的歌，只让你复核那一小撮
+- **可信度分级**：给你的标签打 high / medium / low，避免尾部指标被少数难样本带偏
+- **42 维特征**：响度、真峰、动态、频谱、MFCC，全部 ffmpeg 解码，和耳朵听到的一致
+- **全格式**：flac / mp3 / m4a / ogg / opus / ape / wv 都能写（`.wav` 不行喵，格式本身不支持）
+- **增量缓存**：特征缓存按路径 md5 存，改标签不影响命中，第二次跑飞快
 
 ---
 
 ## 📊 实测成绩（867 首，10 seed 交叉验证）
 
-猫猫不说大话，这是真·干净协议下的 OOF 成绩喵：
+喵不说大话，这是干净协议下的数字喵：
 
 | 模型 | MAE | \|误差\| > 2 dB | \|误差\| > 3 dB | 最大误差 |
 |---|---:|---:|---:|---:|
-| 双专家 + 门控（原始架构） | 0.940 | 95 首 | 63 首 | 5.94 |
+| 双专家 + 门控（第一代） | 0.940 | 95 首 | 63 首 | 5.94 |
 | 单 LGB 回归（42 维） | 0.688 | 16 首 | 5 首 | 4.34 |
-| **本仓库最终版（42 维 + 组信号）** | **0.666** | **10 首** | **3 首** | **3.80** |
+| **第二代最终版（42 维 + 组信号）** | **0.666** | **10 首** | **3 首** | **3.80** |
 
-> 🎀 以「误差 ≤ 0.75 dB 就等于无误差」（人耳分辨不了）计，
-> 现在有 **64.5%** 的歌落在这一档里，而**从未被人耳验证过**的那 808 首
-> 更是有 **66.3%** 达标 (`=^･ω･^=`)
+> 🎀 以「误差 ≤ 0.75 dB 就等于无误差」（人耳分辨不了）来算，
+> 现在有 **64.5%** 的歌落在这一档里喵 (=^･ω･^=)
 
-**组信号这一招到底值多少？** 逐 seed 配对胜负 **10/10**，不是运气喵：
+**组信号这一招值多少？** 逐 seed 配对胜负 10/10，不是运气喵：
 
 | 增量特征 | MAE | >2 dB | 配对胜率 |
 |---|---:|---:|---:|
@@ -49,100 +69,251 @@
 
 ---
 
-## 🚀 快速开始
+## 🐾 喵的成长日记（原理）
+
+喵先看一堆**你亲手标的** `delta_gain`，然后：
+
+1. 用 ffmpeg 把每首歌解码成 44100 Hz
+2. 提取 42 个「这首歌长什么样」的特征
+3. 学「特征 → 该衰减多少 dB」这层关系
+4. 遇到新歌时看一眼特征就知道该写多少喵～
+
+**两阶段是怎么回事？**
+
+```
+阶段 1   42 维  →  基础模型  →  每首的基础预测
+                                  ↓
+阶段 2   按 目录/专辑/艺人 分组，算「组内其他成员的基础预测均值 + 成员数」
+                                  ↓
+         42 维 + 6 维组信号  →  最终模型  →  写进文件的 tag
+```
+
+为什么要这样？因为**同一张专辑里的歌，目标响度通常接近**。
+但——`にゃん`——**这条规律不能当规则用，只能当特征**。
+喵试过拿「同专辑标签中位数」直接当建议值，三处**全错**。做成特征喂给模型就稳了喵。
+
+---
+
+## 🐈 脚本介绍
+
+```text
+├── train_eval_export.py            # 训练：提特征 + 建缓存 + 训模型 + 导出
+├── predict_and_tag.py              # 推理：批量预测 + 写标签（支持两阶段）
+├── annotate_gain.py                # 手动标注工具（GUI，PySide6）
+├── group_signal.py                 # 组信号（训练与推理共用同一份实现！）
+├── build_library_meta.py           # 建全库 目录 / 专辑 / 艺人 表
+├── find_label_outliers.py          # 揪出疑似「标注手滑」的清单
+├── label_confidence.py             # 标签可信度分级 + 分层指标
+├── compare_tags.py                 # 新预测 vs 文件现有标签的对比
+├── migrate_feat_cache.py           # 音乐库搬家后按文件名迁移特征缓存
+├── diag_honest_eval.py             # 无泄漏评估（演示 OOF 泄漏有多可怕）
+├── diag_detector_validation.py     # 用注入噪声验证「打滑检测器」召回率
+├── validate_two_stage.py           # 两阶段端到端验证
+├── requirements.txt
+└── handcraft_cache_42d_aug05.pkl   # 旧增强缓存（给 diag_honest_eval 演示泄漏用）
+```
+
+运行时会自己生成这些（都在 `.gitignore` 里，不会上传喵）：
+
+```text
+├── delta_gain.csv                  # 你的标注（教材，别上传）
+├── library_meta.csv                # 目录/专辑/艺人表
+├── feat_cache/                     # 每首歌的 42 维特征缓存（.npz）
+├── handcraft_cache_42d_v2.pkl      # 汇总缓存
+├── model_dir/
+│   ├── stage1/  model_*.pkl        # 一阶段（42 维）
+│   └── stage2/  model_*.pkl        # 二阶段（42 + 组信号）
+├── eval_out/                       # OOF 评估产物
+└── inference_logs/predict_*.csv    # 每次推理的日志
+```
+
+---
+
+## 🐟 安装依赖
+
+需要 Python 3.10+，还有 **ffmpeg**（必备！用来解码音频喵）。
 
 ```bash
 pip install -r requirements.txt
 ```
 
-需要系统里有 `ffmpeg` 和 `ffprobe`（PATH 能被找到就行）。
+装 ffmpeg：
 
-### 1️⃣ 先标注一小撮歌，教猫猫认识你的耳朵
+- **Windows**：`winget install ffmpeg`，装完**重开 PowerShell**
+- **macOS**：`brew install ffmpeg`
+- **Linux**：`sudo apt install ffmpeg`
+
+验证：
 
 ```bash
-python src/annotate_gain.py --input "/path/to/one/album"
+ffmpeg -version
+ffprobe -version
 ```
 
-界面快捷键：`Space` 播放/暂停 · `↑↓` 微调 ±0.5 dB · `T` A/B 对比 · `←→` ±5 秒 · `S` 保存下一首
+两条都有输出，说明装好了喵。
 
-导出的 `delta_gain.csv` 就是你教给猫猫的全部教材：
-```csv
-file,delta_gain
-song-a.flac,-9.5
-song-b.flac,-11.0
+---
+
+## 🐠 快速开始
+
+### 🐾 第 1 步：手动标注（如果还没有 CSV）
+
+```bash
+python annotate_gain.py --input "D:\Music"
 ```
 
-### 2️⃣ 训练
+喵给你打开一个 GUI：
+
+- `Space` 播放 / 暂停
+- `↑` `↓` 调 ±0.5 dB，实时听变化
+- `T` 在「调整后 / 原始」之间 A/B 对比
+- `S` 保存并下一首，自动写进 `delta_gain.csv`
+- `N` 跳过，`P` 上一首
+- `←` `→` ±5 秒，`Ctrl+←` `Ctrl+→` ±30 秒
+
+中途关掉也没关系，下次打开从断点继续喵。
+
+> 💡 **耐心点标 100 首以上**。喵的学习曲线拟合出来是
+> `MAE = 0.627 + 2.379/√n`，标注越多越准，但收益递减得很厉害喵（翻十倍只赚 0.057）。
+
+### 🐾 第 2 步：建元数据（想用组信号就要这步）
+
+```bash
+python build_library_meta.py --root "D:\Music"
+```
+
+喵会读每个文件的 tag，建一张「目录 / 专辑 / 艺人」表（`library_meta.csv`）。
+只读一次，之后走缓存喵。
+
+### 🐾 第 3 步：训练
 
 ```bash
 # 基础版（单阶段，42 维）
-python src/train_eval_export.py \
-    --csv delta_gain.csv \
-    --audio-root "/path/to/your/music" \
-    --n-jobs 8 --shift -5
+python train_eval_export.py --csv delta_gain.csv --audio-root "D:\Music" --n-jobs 8 --shift -5
 
-# 加上组信号（推荐，需要先建元数据）
-python src/build_library_meta.py --root "/path/to/your/music"
-python src/train_eval_export.py \
-    --csv delta_gain.csv \
-    --audio-root "/path/to/your/music" \
-    --n-jobs 8 --shift -5 --group-signal
+# 加上组信号（推荐喵！）
+python train_eval_export.py --csv delta_gain.csv --audio-root "D:\Music" --n-jobs 8 --shift -5 --group-signal
 ```
 
-### 3️⃣ 贴标签
+- 第一次跑：提所有歌的 42 维特征，约 1~1.5 小时
+- 特征缓存到 `feat_cache/`，第二次秒过
+- 训练本身约 1~2 分钟
+- 输出：`model_dir/stage1/` + `model_dir/stage2/` + `meta.json`
+
+### 🐾 第 4 步：先空跑看一眼
 
 ```bash
-# 先空跑，只看不写
-python src/predict_and_tag.py --input "/path/to/your/music" --dry-run --workers 6
-
-# 确认无误再真写
-python src/predict_and_tag.py --input "/path/to/your/music" --workers 6
+python predict_and_tag.py --input "D:\Music" --dry-run --workers 6
 ```
 
-> ⚠️ **`--workers` 不要超过 8**。librosa 的 HPSS 很吃内存，
-> 实测 16 个 worker 会在 31 GB 内存的机器上直接 MemoryError 喵… (´･_･`)
->
-> ⚠️ **组信号模式要批量跑全库**（至少整张专辑）。只跑几十首时
-> 「专辑/艺人」组里只有它自己一个成员，算不出信号，模型会默默退化成 42 维行为。
+**先不开写**，只看预测值合不合理喵。满意了再去掉 `--dry-run`。
+
+### 🐾 第 5 步：批量写标签
+
+```bash
+python predict_and_tag.py --input "D:\Music" --workers 6
+```
+
+喵会：
+
+- 从 `feat_cache/` 读特征（命中就秒过）
+- **对全库一次性算基础预测 → 算组信号 → 出最终预测**
+- 写到文件的 `REPLAYGAIN_TRACK_GAIN` / `_PEAK` 标签
+- 日志存到 `inference_logs/predict_YYYYMMDD_HHMMSS.csv`
+
+> ⚠️ **`--workers` 千万别超过 8！**
+> librosa 的 HPSS 特别吃内存，实测 16 个 worker 会在 31 GB 内存的机器上直接
+> `MemoryError`，全库挂掉 11 个 Hi-Res 文件喵…… (´･_･`)
+
+> ⚠️ **组信号模式必须批量跑全库**（至少整张专辑）。
+> 只跑几十首的话，「专辑」组里只有它自己一个成员，算不出信号，
+> 喵会默默退化成 42 维行为——不报错，但也没有增益喵。
+
+### 🐾 第 6 步：foobar2000 刷新
+
+写完标签后，foobar2000 里选中歌，在属性里看一下 `REPLAYGAIN_TRACK_GAIN` 就有了喵！
 
 ---
 
-## 🧰 主要脚本
+## 🐙 喵的详细说明
 
-| 脚本 | 作用 |
+### 🎀 `train_eval_export.py` 训练
+
+| 参数 | 说明 |
 |---|---|
-| `src/annotate_gain.py` | PyQt 标注器，支持 `--candidates` 只复核指定清单、`--blind` 盲测 |
-| `src/train_eval_export.py` | 训练 + OOF 评估 + 导出模型；`--group-signal` 开两阶段 |
-| `src/predict_and_tag.py` | 批量推理并写标签；支持 `two_stage_lgb` 模型 |
-| `src/find_label_outliers.py` | 揪出疑似「标注手滑」的歌曲清单 |
-| `src/group_signal.py` | 组信号特征（**训练与推理共用同一份实现**） |
-| `src/build_library_meta.py` | 从音频 tag / 文件名建全库的目录 / 专辑 / 艺人表 |
-| `src/compare_tags.py` | 新预测 vs 文件里现有标签的对比 |
-| `src/label_confidence.py` | 给标签打可信度分级，修正评估口径 |
-| `src/migrate_feat_cache.py` | 音乐库搬家后按文件名迁移特征缓存 |
-| `src/diag_honest_eval.py` | 无泄漏评估协议（量化 OOF 泄漏量） |
-| `src/diag_detector_validation.py` | 用注入噪声验证「打滑检测器」的召回率 |
+| `--csv` | 训练标签 CSV |
+| `--audio-root` | 音频根目录（递归扫描） |
+| `--n-jobs` | 提特征并行进程数，默认 8（**别超 16**） |
+| `--shift` | 标签整体偏移量（见下面「标签偏移」） |
+| `--n-seeds` | OOF 用几个 seed，默认 5 |
+| `--group-signal` | **启用两阶段组信号**（默认关闭，关闭时和旧版完全一致） |
+| `--force-reextract` | 清空 `feat_cache/` 全部重提 |
+
+**标签偏移**：如果你习惯把 CSV 里所有 `delta_gain` 统一减 5，
+跑的时候加 `--shift -5`，脚本会自动把所有阈值和分组边界下移 5。
+这个值写进 `meta.json`，推理时自动读取喵。
+
+### 🎀 `predict_and_tag.py` 推理
+
+| 参数 | 说明 |
+|---|---|
+| `--input` | 音频文件夹（递归） |
+| `--dry-run` | 只预测不写标签 |
+| `--write-r128` | Opus 额外写 `R128_TRACK_GAIN` |
+| `--only-ext` / `--exclude-ext` | 只处理 / 排除指定格式 |
+| `--skip-tagged` | 跳过已有 ReplayGain 标签的文件 |
+| `--workers` | 并行进程数，**建议 6~8** |
+| `--limit N` | 只处理前 N 首 |
+
+### 🎀 `annotate_gain.py` 标注工具
+
+- **实时 dB 增益**：改数值音量立即变
+- **A/B 对比**：`T` 键切换「调整后 / 原始」
+- **进度保存**：每次保存自动写盘，崩了重跑继续
+- **`--candidates xxx.csv`**：只复核清单里的歌，界面会显示
+  `模型预测 | 邻居中位数 | 建议 | 你原来标的`
+- **`--blind`**：盲测模式，不显示旧值和建议，只听声音判断
+  （用来量化你自己的标注噪声喵，别被旧答案锚定）
+
+### 🎀 `find_label_outliers.py` 标签体检
+
+喵用「残差大 **且** 自己标签偏离特征邻域中位数」找出疑似打滑的歌：
+
+```bash
+python find_label_outliers.py
+python find_label_outliers.py --out-suffix _round2    # 不覆盖上一轮清单
+```
+
+实测召回率（注入已知噪声验证）：注入 ±2~3.5 dB 时约 **60%**，
+±1.5~2.5 dB 时约 35%。**小于 2 dB 的打滑基本检测不出来喵。**
+
+### 🎀 `label_confidence.py` 可信度分级
+
+给每个标签打上 `high` / `medium` / `low`，然后**按分层看指标**。
+喵发现过一件很重要的事：90% 以上的标签其实**从没被人耳验证过**，
+而「复核过」的那批恰好是被检测器专门挑出来的**最难样本**——
+所以混在一起看的尾部指标是被少数难样本主导的喵。
 
 ---
 
-## 🐾 猫猫踩过的坑（都写在这里了，主人别再踩）
+## 🐾 喵踩过的坑（都写在这了，别再踩喵！）
 
-这些是花了一整天、几十个实验换来的，每一条都有数据支撑喵：
+这些是几十个实验换来的，每条都有数据支撑喵：
 
 ### 1. 朴素 KFold + 数据增强 = 评估泄漏 ⚠️
 
 把 909 原始 + 909 增强样本堆成 1818 行再随机切分，同一首歌的增强副本漏进了训练集。
-**虚报 MAE 0.383，真实是 0.940**。要用 `GroupKFold` 锁同折。
+**虚报 MAE 0.383，真实是 0.940**。必须用 `GroupKFold` 锁同折喵。
 
-### 2. 报"5 模型平均"的分数是骗自己
+### 2. 报「5 模型平均」的分数是骗自己
 
-`meta.json` 里没有 `n_ensemble` 时 `load_models()` 默认 1，实际部署的是单模型。
-**训练时的 OOF 分数必须在「推断时真正会用的那套模型」上测。**
+`meta.json` 里没 `n_ensemble` 时 `load_models()` 默认 1，实际部署的是单模型。
+**OOF 必须在「推断时真正会用的那套模型」上测。**
 
 ### 3. `random_state` 对 LightGBM 是空操作
 
 不设 `bagging_fraction` / `feature_fraction` 时，`seed=0` 和 `seed=1` 的预测**逐位相同**。
-`--n-ensemble 5` 训出来的是 5 个一模一样的模型，收益恒为 0。
+`--n-ensemble 5` 训出来的是 5 个一模一样的模型，收益恒为 0 喵。
 
 ### 4. 后处理校准基本都不泛化
 
@@ -152,82 +323,90 @@ Isotonic / 全局线性 / 分组平移 / 保序校准……全试过，**没有�
 
 ### 5. 双专家 / 分专家架构是负收益
 
-不管软路由还是硬路由，都不如一个单回归。连 Ridge 线性回归都比它好。
-（根因是 `-10 <= y < -9` 那段两个专家都没训过的空洞。）
+不管软路由还是硬路由，都不如一个单回归。连 Ridge 线性回归都比它好喵。
+（根因：`-10 ≤ y < -9` 那段两个专家都没训过，是个空洞。）
 
 ### 6. 「同专辑」不能当规则，只能当特征 🐈
 
 拿「同专辑标签中位数」当规则去建议，实测三处**全错**。
-但把它做成「组内其他成员的预测均值」这个**特征**喂给模型，10/10 稳定获胜。
-> 血泪教训：位置/分组信息当规则是拍脑袋，当特征是让模型自己学。
+但做成「组内其他成员的预测均值」这个**特征**喂给模型，10/10 稳定获胜。
+> 血泪教训：分组信息当规则是拍脑袋，当特征是让模型自己学喵。
 
 ### 7. 响度不变性增强：物理上成立，训练上灾难
 
-给音频加 +Δ dB、标签也 +Δ，物理完全自洽（实测 5 维精确 +Δ、33 维精确不变）。
+给音频加 Δ dB、标签也加 Δ，物理完全自洽（实测 5 维精确 +Δ、33 维精确不变）。
 但模型学到的不是「偏移 Δ」，而是「同一首歌的多个副本标签不同 → 回归均值」。
-**MAE 0.688 → 0.811，>2 dB 从 16 首涨到 40 首**。
+**MAE 0.688 → 0.811，>2 dB 从 16 首涨到 40 首**喵。
 
 ### 8. OOF 误差² = 模型真实误差² + 标签噪声²
 
 对已有标签测出来的误差**永远 ≥ 标签噪声**。
 人耳噪声 0.5 dB 就决定了 MAE 下不到 ~0.40。
-**所以别拿 MAE 当唯一目标**——先问「多少误差是人耳分辨不出的」（本项目用 0.75 dB）。
+**所以别拿 MAE 当唯一目标**——先问「多少误差是人耳分辨不出的」。
+
+### 9. `.wav` 写不了 ReplayGain 标签
+
+格式本身不支持，喵会报 `err:unsupported: .wav` 然后跳过。
+整轨 WAV + cue 这种，建议先转成分轨 FLAC 再处理喵。
+
+### 10. 文件名带 `♯` 之类的字符会让进程整个崩掉
+
+Windows 控制台默认 GBK，`print(f'... {filename}')` 抛 `UnicodeEncodeError`，
+**不是跳过那一首，是整个多进程任务死掉**。已经加了
+`sys.stdout.reconfigure(errors='replace')` 喵。
 
 ---
 
-## 📁 目录结构
+## 🐾 常见问题
 
-```
-replaygain-nyan/
-├── src/                         # 全部可执行脚本
-│   ├── annotate_gain.py         # 标注器（PyQt）
-│   ├── train_eval_export.py     # 训练 + 评估 + 导出
-│   ├── predict_and_tag.py       # 批量推理写标签
-│   ├── group_signal.py          # 组信号（训练/推理共用）
-│   ├── build_library_meta.py    # 全库元数据
-│   ├── find_label_outliers.py   # 标签打滑检测
-│   ├── label_confidence.py      # 标签可信度分级
-│   ├── compare_tags.py          # 新旧标签对比
-│   ├── migrate_feat_cache.py    # 特征缓存迁移
-│   ├── diag_honest_eval.py      # 无泄漏评估
-│   ├── diag_detector_validation.py
-│   └── validate_two_stage.py    # 两阶段端到端验证
-├── docs/
-│   └── 诊断_模型真实精度.md       # 完整诊断报告（含全部实验数据）
-├── requirements.txt
-└── .gitignore                   # 已经把个人数据全挡在外面了喵
-```
+### 喵！训练时为什么这么慢？
 
-运行时会在**当前工作目录**生成这些：
+特征提取是 CPU 密集型，主要是 HPSS（谐波-打击分离）和 STFT。900 首约 1 小时 20 分。
 
-```
-delta_gain.csv                  # 你的标注（教材）
-feat_cache/                     # 42 维特征缓存，key = 绝对路径的 md5
-handcraft_cache_42d_v2.pkl      # 汇总缓存
-library_meta.csv                # 目录/专辑/艺人表
-model_dir/stage1/ stage2/       # 两阶段模型
-eval_out/                       # OOF 评估产物
-inference_logs/                 # 每次推理的日志
-```
+**第二次跑就秒过了**，因为 `feat_cache/` 里有缓存喵。
 
----
+### 喵！改了 CSV 里的标签要重提特征吗？
 
-## 🎯 `--shift` 是干嘛的
+**不需要喵！** `feat_cache/` 里的 `.npz` 只存 `x`（音频特征），不存 `y`（标签）。
+重训时自动用新标签，秒过～
 
-如果你习惯把所有 `delta_gain` 统一减去一个常数（本项目作者是减 5），
-用 `--shift -5` 让分组统计和阈值也跟着下移。这个值会写进 `meta.json`，
-推理时自动读取，**不用每次手动传**喵。
+### 喵！ffmpeg 没装怎么办？
+
+脚本会显示 `decoder = soundfile/librosa (fallback)`。这时候 mp3 会少算 3 dB，**不准**。
+赶紧装 ffmpeg 喵！
+
+### 喵！为什么一定要用 ffmpeg？
+
+因为 foobar2000 和大多数播放器也是 ffmpeg 系的解码器。
+你标注时听到的是 ffmpeg 解码的响度，特征提取也必须用 ffmpeg 才能对齐喵。
+
+### 喵！`--skip-tagged` 加不加？
+
+- **加**：已有 ReplayGain 标签的跳过，只处理没标签的（增量补新歌）
+- **不加**：所有文件重写（换了模型想全量覆盖时用）
+
+### 喵！mp3 标签写进去 foobar2000 不认？
+
+ID3 的 TXXX frame 对大小写敏感。脚本已经写大写 `REPLAYGAIN_TRACK_GAIN` 了喵。
+
+### 喵！长音频（40 分钟整轨）怎么办？
+
+会自动分块（默认 10 分钟一块），内存不会爆。
+但整轨的预测值是分块平均，不太准，建议人工过一遍喵。
 
 ---
 
-## 📜 许可证
+## 🐟 License
 
-MIT。随便用、随便改，但猫猫不对你听感负责喵 (=･ｪ･=)
+MIT
 
 ---
 
-<div align="center">
+## 🐠 致谢
 
-**ฅ^•ﻌ•^ฅ**　「响度卷成一条线之后，世界就安静了喵～」
+感谢 cloudydreamland 的大力支持喵～
+也感谢所有让喵踩过坑的失败实验，没有它们喵还在自我感觉良好喵 (´；ω；`)
 
-</div>
+---
+
+**喵喵喵～祝你听歌愉快！🐾**
