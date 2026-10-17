@@ -1,0 +1,33 @@
+# 产物与缓存（体积大 / 可重建）
+feat_cache/
+handcraft_cache_42d_v2.pkl
+model_dir/
+model_dir_*/
+eval_out/
+eval_out_*/
+inference_logs/
+__pycache__/
+*.pyc
+catboost_info/
+
+# 你的个人数据 —— 绝不入库
+delta_gain.csv
+library_meta.csv
+label_confidence.csv
+eval_by_confidence.csv
+tag_compare.csv
+lufs_cache.json
+annotate_progress*.json
+review_candidates*.csv
+review_hard*.csv
+_oof_pred_*.npy
+*.log
+
+# 音频文件
+*.flac
+*.mp3
+*.m4a
+*.wav
+*.ape
+*.ogg
+*.wv
