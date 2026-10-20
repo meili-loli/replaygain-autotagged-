@@ -530,6 +530,60 @@
     } catch (e) { /* 后端没开时忽略 */ }
   }
 
+  const UPLOAD_BATCH = 8;   // 每批文件数：整文件夹上传时分批请求，避免超大请求体
+
+  function uploadFilesBatch(files, onProgress) {
+    return new Promise(res => {
+      const fd = new FormData();
+      files.forEach(f => fd.append("files", f, f.name));
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", "/api/session/upload");
+      xhr.upload.addEventListener("progress", e => {
+        if (e.lengthComputable && onProgress) onProgress(e.loaded / e.total);
+      });
+      xhr.addEventListener("load", () => {
+        let d = {};
+        try { d = JSON.parse(xhr.responseText); } catch (_) {}
+        res({ ok: xhr.status === 200 && !!d.ok, saved: (d.saved || []).length, detail: d });
+      });
+      xhr.addEventListener("error", () => res({ ok: false }));
+      xhr.send(fd);
+    });
+  }
+
+  async function uploadInBatches(fileList) {
+    const files = [...fileList];
+    if (!files.length) return;
+    const prog = $("upload-prog"), bar = prog.querySelector("i"), txt = $("upload-txt");
+    prog.style.display = "block";
+    bar.style.width = "0%";
+    const batches = Math.ceil(files.length / UPLOAD_BATCH);
+    let savedTotal = 0;
+    for (let b = 0; b < batches; b++) {
+      const chunk = files.slice(b * UPLOAD_BATCH, (b + 1) * UPLOAD_BATCH);
+      const base = (b * UPLOAD_BATCH) / files.length;
+      txt.textContent = `上传批次 ${b + 1}/${batches}…`;
+      let r = { ok: false };
+      try {
+        r = await uploadFilesBatch(chunk, pc => {
+          const ratio = base + pc * (chunk.length / files.length);
+          bar.style.width = Math.round(ratio * 100) + "%";
+          txt.textContent = `上传中… 约 ${Math.round(ratio * files.length)}/${files.length} 首`;
+        });
+      } catch (e) { /* 网络异常按失败处理 */ }
+      if (!r.ok) {
+        prog.style.display = "none";
+        txt.textContent = "有一批上传失败喵（网络/文件超上限？），已传部分不受影响";
+        await refreshLibrary();
+        return;
+      }
+      savedTotal += r.saved;
+    }
+    prog.style.display = "none";
+    txt.textContent = `全部传完啦 ♡ 曲库已刷新（会话内新增 ${savedTotal} 首）`;
+    await refreshLibrary();
+  }
+
   $("btn-upload").addEventListener("click", () => {
     const b = $("btn-upload");
     b.textContent = "已打开文件选择框…";
@@ -538,40 +592,14 @@
   });
   $("upload-input").addEventListener("change", () => {
     const fs = $("upload-input").files;
-    if (!fs.length) return;
-    const fd = new FormData();
-    for (const f of fs) fd.append("files", f);
-    const prog = $("upload-prog"), bar = prog.querySelector("i"), txt = $("upload-txt");
-    prog.style.display = "block";
-    bar.style.width = "0%";
-    txt.textContent = "上传中… 0%";
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", "/api/session/upload");
-    xhr.upload.addEventListener("progress", e => {
-      if (e.lengthComputable) {
-        const pc = Math.round((e.loaded / e.total) * 100);
-        bar.style.width = pc + "%";
-        txt.textContent = "上传中… " + pc + "%";
-      }
-    });
-    xhr.addEventListener("load", () => {
-      prog.style.display = "none";
-      let d = {};
-      try { d = JSON.parse(xhr.responseText); } catch (_) {}
-      if (xhr.status === 200 && d.ok) {
-        txt.textContent = "传好啦 ♡ 入库 " + d.saved.length + " 首" +
-          (d.skipped.length ? " · 跳过 " + d.skipped.length + " 个（非音频/超上限）" : "");
-        refreshLibrary();
-      } else {
-        txt.textContent = "上传失败喵：" + (d.detail || xhr.status);
-      }
-    });
-    xhr.addEventListener("error", () => {
-      prog.style.display = "none";
-      txt.textContent = "上传失败喵（后端没开？）";
-    });
-    xhr.send(fd);
     $("upload-input").value = "";
+    uploadInBatches(fs);
+  });
+  $("btn-upload-folder").addEventListener("click", () => $("folder-input").click());
+  $("folder-input").addEventListener("change", () => {
+    const fs = $("folder-input").files;
+    $("folder-input").value = "";
+    uploadInBatches(fs);
   });
   $("btn-download-zip").addEventListener("click", async () => {
     const btn = $("btn-download-zip");
