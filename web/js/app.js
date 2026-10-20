@@ -52,6 +52,13 @@
   abOrig.addEventListener("click", () => { abMode = "orig"; abOrig.classList.add("active"); abApplied.classList.remove("active"); applyVolume(); });
   abApplied.addEventListener("click", () => { abMode = "applied"; abApplied.classList.add("active"); abOrig.classList.remove("active"); applyVolume(); });
   playpauseBtn.addEventListener("click", () => {
+    // 还没加载过音源时：自动选当前曲目（曲库为空则提示）
+    if (!currTrack.src && tracks.length) {
+      selectTrack(curIdx === -1 ? 0 : curIdx);
+    } else if (!currTrack.src) {
+      addLog(markLog, "曲库是空的喵：先「☁ 上传歌曲」或点 ♥ 更换音乐目录");
+      return;
+    }
     if (currTrack.paused) currTrack.play().catch(() => {}); else currTrack.pause();
   });
   currTrack.addEventListener("play", () => { playpauseBtn.innerHTML = "&#9646;"; isPlaying = true; });
@@ -606,6 +613,8 @@
       (d.mode === "cloud" ? " · ☁ 云端会话" : "");
     const lt = $("lib-total");
     if (lt) lt.textContent = String(d.total).padStart(3, "0");
+    // 首次加载自动选中第一首，播放器即有真实音源可播
+    if (tracks.length && curIdx === -1) selectTrack(0);
   }
   async function boot() {
     if (!(await checkAuth())) return;
