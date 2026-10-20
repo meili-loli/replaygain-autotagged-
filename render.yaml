@@ -5,7 +5,7 @@ services:
     plan: free
     healthCheckPath: /api/auth/status
     envVars:
-      - key: RG_ACCESS_CODE
-        sync: false          # 在 Render 后台填你的访问码
       - key: RG_WORKERS
         value: "1"           # 免费档 512MB，限制并发防 OOM
+      # 公开站点：不设 RG_ACCESS_CODE 即无访问码直接进
+      # 想加访问码时再来这里加 RG_ACCESS_CODE 并 Save
