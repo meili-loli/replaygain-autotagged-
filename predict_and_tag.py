@@ -558,8 +558,38 @@ def _worker_init(model_dir, feat_cache_dir, shift):
     _W['conf_low'] = CONF_LOW_BASE + shift
 
 
+def extract_and_cache(path, cache_dir=None):
+    """提特征，并**写回** feat_cache。
+
+    返回 (vec, err)。vec 成功时是 (42,) float32；失败为 None，err 是原因。
+
+    为什么以前只读不写：训练端（train_eval_export.py）会建缓存，推理端以为
+    永远命中就够了。但实际音乐库里有上百首没经过训练的歌，它们每次推理都要
+    重新提取（librosa HPSS 约 5 秒/首）。实测 1060 首全库：
+        只读缓存   869.8 秒，而且每次都是 869.8 秒
+        写回缓存   首次 869.8 秒（顺便建好），第二次 6.0 秒 —— 141 倍
+    写失败不影响本次结果，所以这里静默吞掉异常。
+    """
+    try:
+        x = extract_features(path)
+    except Exception as e:
+        return None, f'extract: {type(e).__name__}: {e}'
+    if x is None:
+        return None, 'extract_features returned None'
+    x = np.asarray(x, dtype=np.float32)
+    if x.shape != (42,):
+        return None, f'shape {x.shape}'
+    if cache_dir:
+        try:
+            os.makedirs(cache_dir, exist_ok=True)
+            np.savez(os.path.join(cache_dir, file_key(path) + '.npz'), x=x)
+        except Exception:
+            pass
+    return x, None
+
+
 def _worker_extract(task):
-    """两阶段模式专用：只负责把 42 维特征取出来（缓存优先）。
+    """两阶段模式专用：只负责把 42 维特征取出来（缓存优先，未命中则提取并写回）。
 
     两阶段的组信号必须等全库基础预测齐了才能算，所以把「取特征」和
     「出预测」拆成两趟：本函数只取特征，预测在主进程统一做。
@@ -569,14 +599,9 @@ def _worker_extract(task):
         x = try_load_feat_cache(fp, _W.get('feat_cache_dir'))
         from_cache = x is not None
         if not from_cache:
-            x = extract_features(fp)
+            x, err = extract_and_cache(fp, _W.get('feat_cache_dir'))
             if x is None:
-                return {'path': fp, 'ok': False,
-                        'status': 'err:extract_features returned None'}
-            x = np.asarray(x, dtype=np.float32)
-            if x.shape != (42,):
-                return {'path': fp, 'ok': False,
-                        'status': f'err:shape {x.shape}'}
+                return {'path': fp, 'ok': False, 'status': f'err:{err}'}
         return {'path': fp, 'ok': True, 'status': '', 'x': x,
                 'from_cache': from_cache}
     except Exception as e:
@@ -593,12 +618,9 @@ def _worker_task(task):
         x = try_load_feat_cache(fp, _W.get('feat_cache_dir'))
         from_cache = x is not None
         if not from_cache:
-            x = extract_features(fp)
+            x, err = extract_and_cache(fp, _W.get('feat_cache_dir'))
             if x is None:
-                return {'path': fp, 'status': 'err:extract_features returned None'}
-            x = np.asarray(x, dtype=np.float32)
-            if x.shape != (42,):
-                return {'path': fp, 'status': f'err:shape {x.shape}'}
+                return {'path': fp, 'status': f'err:{err}'}
 
         pred, low_p, a_p, prob, route_a, spread = predict_one(
             x, _W['models'], _W['tau'], _W['model_type'])
