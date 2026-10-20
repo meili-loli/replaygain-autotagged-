@@ -85,7 +85,7 @@
       }
       row.innerHTML =
         '<span>' + t.no + '</span>' +
-        '<span class="tname">' + t.file + '</span>' +
+        '<span class="tname" title="' + String(t.file).replace(/&/g, "&amp;").replace(/"/g, "&quot;") + '">' + t.file + '</span>' +
         '<span>' + t.fmt + '</span>' +
         '<span>' + (t.mark !== null && t.mark !== undefined ? fmtDb(t.mark) : "—") + '</span>' +
         '<span class="' + cc + '">' + t.conf + '</span>' +
@@ -112,8 +112,11 @@
     currTrack.load();
     isPlaying = false;
     playpauseBtn.innerHTML = "&#9654;";
-    $("track-name").textContent = t.file;
-    $("track-artist").textContent = "第 " + t.no + " 首 · 点播放开始校准 ♪";
+    const tn = $("track-name");
+    tn.textContent = t.file;
+    tn.title = t.file;
+    const ta = $("track-artist");
+    if (ta) ta.textContent = "第 " + t.no + " 首 · 点播放开始校准 ♪";
   }
   function advance() {
     let n = curIdx;
@@ -291,20 +294,52 @@
   /* ================= 彩虹字（原站 1:1） ================= */
   const rainbowColors = ["#ff7fa8", "#f49bc7", "#b88de8", "#7fa8ff", "#78c8d8", "#86cda1", "#f2c766"];
   const heroTitle = $("hero-rainbow");
+  let heroCharLen = 0;
   function splitRainbow(el) {
     const t = el.textContent;
     el.textContent = "";
-    [...t].forEach(ch => { const sp = document.createElement("span"); sp.textContent = ch; el.appendChild(sp); });
+    const inner = document.createElement("span");
+    inner.className = "tt-inner";
+    const makeSeg = () => {
+      const seg = document.createElement("span");
+      seg.className = "tt-seg";
+      [...t].forEach(ch => { const sp = document.createElement("span"); sp.textContent = ch; seg.appendChild(sp); });
+      return seg;
+    };
+    const seg = makeSeg();
+    inner.appendChild(seg);
+    el.appendChild(inner);
+    heroCharLen = [...t].length;
+    // 一行放得下就居中静止；放不下变成无缝跑马灯（内容复制两份循环，悬停暂停方便细看）
+    requestAnimationFrame(() => {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const w = seg.scrollWidth;
+      if (w > el.clientWidth - 8) {
+        el.classList.add("is-scroll");
+        inner.appendChild(makeSeg());
+        const dur = Math.max(6000, Math.round(w / 45) * 1000); // 约 45px/秒
+        inner.animate([{ transform: "translateX(0)" }, { transform: `translateX(-${w}px)` }],
+          { duration: dur, iterations: Infinity });
+      } else {
+        el.classList.remove("is-scroll");
+      }
+    });
   }
   if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     splitRainbow(heroTitle);
     let offset = 0;
     setInterval(() => {
-      heroTitle.querySelectorAll("span").forEach((letter, i) => {
-        letter.style.color = rainbowColors[(i + offset) % rainbowColors.length];
+      heroTitle.querySelectorAll(".tt-seg > span").forEach((letter, i) => {
+        letter.style.color = rainbowColors[((i % heroCharLen) + offset) % rainbowColors.length];
       });
       offset = (offset + 1) % rainbowColors.length;
     }, 900);
+  } else {
+    // 减少动态偏好：静态彩虹着色，不滚动
+    splitRainbow(heroTitle);
+    heroTitle.querySelectorAll(".tt-seg > span").forEach((letter, i) => {
+      letter.style.color = rainbowColors[i % rainbowColors.length];
+    });
   }
 
   /* ================= 小贴士轮播 ================= */
