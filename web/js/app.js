@@ -327,30 +327,39 @@
     el.textContent = "";
     const inner = document.createElement("span");
     inner.className = "tt-inner";
-    const makeSeg = () => {
-      const seg = document.createElement("span");
-      seg.className = "tt-seg";
-      [...t].forEach(ch => { const sp = document.createElement("span"); sp.textContent = ch; seg.appendChild(sp); });
-      return seg;
-    };
-    const seg = makeSeg();
+    const seg = document.createElement("span");
+    seg.className = "tt-seg";
+    [...t].forEach(ch => { const sp = document.createElement("span"); sp.textContent = ch; seg.appendChild(sp); });
     inner.appendChild(seg);
     el.appendChild(inner);
     heroCharLen = [...t].length;
-    // 一行放得下就居中静止；放不下变成无缝跑马灯（内容复制两份循环，悬停暂停方便细看）
-    requestAnimationFrame(() => {
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    setupMarquee(el);
+  }
+  function setupMarquee(el) {
+    const inner = el.querySelector(".tt-inner");
+    const seg = el.querySelector(".tt-seg");
+    if (!inner || !seg) return;
+    const apply = () => {
+      inner.getAnimations().forEach(a => a.cancel());
       const w = seg.scrollWidth;
-      if (w > el.clientWidth - 8) {
+      if (w > el.clientWidth - 8 && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
         el.classList.add("is-scroll");
-        inner.appendChild(makeSeg());
+        if (inner.querySelectorAll(".tt-seg").length < 2) inner.appendChild(seg.cloneNode(true));
         const dur = Math.max(6000, Math.round(w / 45) * 1000); // 约 45px/秒
         inner.animate([{ transform: "translateX(0)" }, { transform: `translateX(-${w}px)` }],
           { duration: dur, iterations: Infinity });
       } else {
         el.classList.remove("is-scroll");
       }
-    });
+    };
+    apply();
+    // Web 字体异步加载会改变文字宽度：字体就绪后重新测量一次
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(apply).catch(() => {});
+    }
+    // 悬停暂停，方便细看歌名
+    el.addEventListener("mouseenter", () => inner.getAnimations().forEach(a => a.pause()));
+    el.addEventListener("mouseleave", () => inner.getAnimations().forEach(a => a.play()));
   }
   if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     splitRainbow(heroTitle);
@@ -757,6 +766,13 @@
     if (tracks.length && curIdx === -1) selectTrack(0);
   }
   async function boot() {
+    // 部署形态：localhost = 本地版（显示换目录），其余 = 云端版（显示上传/下载）
+    const IS_LOCAL = ["127.0.0.1", "localhost", "[::1]"].includes(location.hostname);
+    const lt = $("local-tools"), ct = $("cloud-tools");
+    if (lt && ct) {
+      lt.style.display = IS_LOCAL ? "" : "none";
+      ct.style.display = IS_LOCAL ? "none" : "";
+    }
     if (!(await checkAuth())) return;
     try {
       const cfg = await (await fetch("/api/config")).json();
