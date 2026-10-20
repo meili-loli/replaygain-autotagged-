@@ -156,10 +156,10 @@
             <div class="window-body hero-body">
               <div class="hero-intro">
                 <div class="welcome-banner"><span>♫ 校准这首歌：① 听 ② 调 ③ mark ♫</span><img src="assets/gif/sparkle.gif" alt=""></div>
-                <p class="hero-kicker">标注中 · 第 <span id="mark-count">004</span> / <span id="lib-total">867</span> 首 · <span id="track-fmt">FLAC</span></p>
+                <p class="hero-kicker">标注中 · 第 <span id="mark-count">—</span> / <span id="lib-total">—</span> 首 · <span id="track-fmt">—</span></p>
                 <p class="step-hint">跟本喵做：<b>①</b> 点下面播放键听原曲 → <b>②</b> 拖滑杆，调到你耳朵舒服的响度（可按「应用后」对比）→ <b>③</b> 舒服了就点「mark」记下来 ♡</p>
-                <h2 class="hero-title" id="hero-rainbow">melty heart (2024)</h2>
-                <p class="hero-line">LUFS <b>-14.2</b> · true peak <b>-0.81 dBTP</b> · conf <b class="ok" id="track-conf">高</b></p>
+                <h2 class="hero-title" id="hero-rainbow"></h2>
+                <p class="hero-line">LUFS <b>—</b> · true peak <b>—</b> · conf <b id="track-conf">—</b></p>
                 <div class="gain-panel">
                   <div class="gain-row">
                     <b class="stepno">2</b><span class="gain-num" id="hero-gain">-3.5</span>
@@ -171,7 +171,7 @@
                   </div>
                   <input class="gain-fader" id="gain-fader" type="range" min="-12" max="6" step="0.5" value="-3.5" aria-label="目标增益">
                   <div class="fader-scale"><span>-12</span><span>-9</span><span>-6</span><span>-3</span><span>0</span><span>+3</span><span>+6</span></div>
-                  <div class="gain-out">out: <b id="lufs-out">-17.7 LUFS</b> · target -18.0 · 許容差 ±1.0</div>
+                  <div class="gain-out">out: <b id="lufs-out">— LUFS</b> · target -18.0 · 許容差 ±1.0</div>
                   <div class="annotate-actions">
                     <b class="stepno">3</b><button class="browser-button" id="btn-skip" type="button">◀◀ 换一首</button>
                     <button class="browser-button primary" id="btn-mark" type="button">✔ 就这样，mark ♡</button>
@@ -190,8 +190,8 @@
                 <div class="music-art" aria-hidden="true"></div>
                 <div class="music-details">
                   <div class="now-playing"><b class="stepno">1</b>先听原曲</div>
-                  <div class="track-name" id="track-name">caramelldansen</div>
-                  <div class="track-artist" id="track-artist">caramella girls</div>
+                  <div class="track-name" id="track-name">—</div>
+                  <div class="track-artist" id="track-artist">—</div>
                   <div class="music-sliders">
                     <button class="browser-button small" id="prev-track" type="button" aria-label="上一首">◀◀</button>
                     <button class="browser-button small" id="playpause-track" type="button" aria-label="播放">&#9654;</button>
@@ -234,7 +234,7 @@
           <div class="window-body">
             <div class="lrow lhead"><span>no.</span><span>track</span><span>fmt</span><span>gain</span><span>conf</span><span>state</span></div>
             <div class="lib-scroll big" id="lib-scroll"></div>
-            <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+            <div id="cloud-tools" style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
               <button class="browser-button" id="btn-upload" type="button">☁ 上传歌曲</button>
               <input type="file" id="upload-input" multiple hidden
                 accept=".flac,.mp3,.m4a,.ogg,.opus,.wav,.aiff,.aif,.ape,.wv">
@@ -246,7 +246,7 @@
             </div>
             <div class="nprog" id="upload-prog" style="display:none;margin-top:6px"><i></i></div>
             <p class="ntxt" id="upload-txt" style="min-height:14px;margin:4px 0 0"></p>
-            <div style="margin-top:8px">
+            <div id="local-tools" style="margin-top:8px">
               <button class="browser-button" id="btn-music-dir" type="button">♥ 更换音乐目录</button>
             </div>
             <div id="music-dir-panel" hidden></div>
