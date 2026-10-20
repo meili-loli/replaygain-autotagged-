@@ -206,7 +206,11 @@ body{
 }
 .welcome-banner img{max-width:52px;max-height:38px;width:auto;height:auto;object-fit:contain}
 .hero-kicker{font-size:10px;letter-spacing:.26em;color:#8fa5b5;margin:0 0 8px;text-transform:uppercase}
-.hero-title{margin:0 0 8px;font-weight:400;font-family:"DotGothic16","MS UI Gothic",sans-serif;font-size:clamp(24px,4.4vw,42px);line-height:1.25;color:var(--ink);word-break:break-word}
+.hero-title{margin:0 0 8px;font-weight:400;font-family:"DotGothic16","MS UI Gothic",sans-serif;font-size:clamp(24px,4.4vw,42px);line-height:1.25;color:var(--ink);white-space:nowrap;overflow:hidden;cursor:default}
+.hero-title .tt-inner{display:inline-flex;white-space:nowrap;will-change:transform}
+.hero-title .tt-seg{display:inline-flex;white-space:nowrap}
+.hero-title:not(.is-scroll) .tt-inner{width:100%;justify-content:center}
+.hero-title:hover .tt-inner{animation-play-state:paused}
 .hero-line{font-size:10.5px;color:#7d8a96;margin:0 0 10px}
 .hero-line b{color:#5c6b78;font-weight:400}
 .hero-line b.ok{color:#5c9e6e}
@@ -243,6 +247,8 @@ body{
 .mark-log{margin-top:9px;font-size:10px;color:#b25578;min-height:15px}
 .mark-log .ln::before{content:"> ";color:#d891ab}
 
+:focus-visible{outline:2px solid #e58bb0;outline-offset:2px}
+
 /* ---- 按钮（原站 .browser-button 质感） ---- */
 .browser-button{
   font:inherit;font-size:11.5px;cursor:pointer;
@@ -269,7 +275,7 @@ body{
 }
 .music-details{flex:1;min-width:0}
 .now-playing{font-size:9.5px;color:#c36d8a}
-.track-name{font-size:13.5px;color:#5a4a52}
+.track-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13.5px;color:#5a4a52}
 .track-artist{font-size:10px;color:#9a8791}
 .music-sliders{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:7px}
 .seek-slider,.volume-slider{appearance:none;-webkit-appearance:none;height:10px;background:transparent;cursor:pointer}
@@ -282,7 +288,7 @@ body{
 .current-time,.total-duration{font-size:9.5px;color:#9a8791}
 .music-vol{font-size:10px;color:#9a8791;margin-top:5px;display:flex;align-items:center;gap:6px}
 .music-error{margin-top:5px;font-size:10px;color:#c0392b}
-.tiny-note{font-size:9px;line-height:1.6;color:#a58a97;margin:7px 0 0}
+.tiny-note{font-size:10px;line-height:1.6;color:#8a6275;margin:7px 0 0}
 
 /* ---- 曲库表 ---- */
 .lib-table{width:100%;border-collapse:collapse;font-size:11px}
@@ -321,7 +327,7 @@ td.bad,.bad{color:#c0392b}
 .todo li::marker{color:#eda2bc}
 .chk-row{display:flex;align-items:center;gap:8px;padding:3px 0;font-size:11px;cursor:pointer}
 .chk-row input{width:12px;height:12px;accent-color:#e58bb0;margin:0}
-.chk-row .dim{margin-left:auto;color:#b193a2;font-size:9.5px}
+.chk-row .dim{margin-left:auto;color:#8a6275;font-size:10px}
 
 /* ---- updates / changelog（原站 .update-log） ---- */
 .update-log{padding:8px}
@@ -364,10 +370,10 @@ td.bad,.bad{color:#c0392b}
   padding:6px;border:1px dotted #e5a4b9;background:#fffafc;border-radius:6px;
 }
 .cat-gallery img{width:100%;max-width:44px}
-.cat-note{margin:6px 0 0;text-align:center;font-size:9px;color:#aa5e7d}
+.cat-note{margin:6px 0 0;text-align:center;font-size:10px;color:#9c4a6e}
 
 /* ---- 复古访客计数器 ---- */
-.hitlabel{margin:0 0 5px;font-size:9px;letter-spacing:.14em;color:#a58a97}
+.hitlabel{margin:0 0 5px;font-size:10px;letter-spacing:.14em;color:#8a6275}
 .hitbox{display:inline-flex;gap:2px;background:#141414;padding:4px 5px;border:1px solid #d1bfca}
 .hitbox .digit{
   font-family:"Courier New",monospace;font-size:15px;font-weight:700;
@@ -487,7 +493,7 @@ td.bad,.bad{color:#c0392b}
 .nprog-wrap{margin-top:9px}
 .nprog{height:14px;border:1px dotted #e5a4b9;background:#fffafc;padding:2px}
 .nprog i{display:block;height:100%;width:8%;background:linear-gradient(90deg,#ffb9d0,#ef88ad);transition:width .18s}
-.ntxt{margin:5px 0 0;font-size:9.5px;color:#a58a97}
+.ntxt{margin:5px 0 0;font-size:10.5px;color:#8a6275}
 
 
 /* ---- STEP 徽章 + 窗口类别小标 ---- */
