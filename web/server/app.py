@@ -117,6 +117,16 @@ def save_cfg(d: dict) -> None:
     CONFIG_PATH.write_text(json.dumps(d, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+# 中文输入法常见的全角字符 → 半角（路径可用性自动纠错）
+_FULLWIDTH_MAP = str.maketrans({"：": ":", "＼": "\\", "／": "/", "～": "~", "　": " "})
+
+
+def clean_dir_input(s: str) -> str:
+    s = (s or "").strip().strip('"').strip("'").strip("“”「」")
+    s = s.translate(_FULLWIDTH_MAP)
+    return os.path.normpath(s)
+
+
 def default_music_dir() -> str:
     d = WEB / "music"
     return str(d) if d.is_dir() else ""
@@ -191,7 +201,7 @@ def api_get_config(request: Request):
 
 @app.post("/api/config")
 def api_set_config(body: dict):
-    d = (body.get("music_dir") or "").strip()
+    d = clean_dir_input(body.get("music_dir") or "")
     if not os.path.isdir(d):
         raise HTTPException(400, f"目录不存在喵：{d}")
     save_cfg({"music_dir": d})
