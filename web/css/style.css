@@ -285,8 +285,8 @@ body{
 .seek-slider::-webkit-slider-thumb,.volume-slider::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:10px;height:10px;background:#c36d8a;margin-top:-4px}
 .seek-slider::-moz-range-track,.volume-slider::-moz-range-track{height:2px;background:#e3a3bb}
 .seek-slider::-moz-range-thumb{width:10px;height:10px;background:#c36d8a;border:0;border-radius:0}
-.current-time,.total-duration{font-size:9.5px;color:#9a8791}
-.music-vol{font-size:10px;color:#9a8791;margin-top:5px;display:flex;align-items:center;gap:6px}
+.current-time,.total-duration{font-size:10.5px;color:#7c5566;font-variant-numeric:tabular-nums}
+.music-vol{font-size:10px;color:#8a6275;margin-top:5px;display:flex;align-items:center;gap:6px}
 .music-error{margin-top:5px;font-size:10px;color:#c0392b}
 .tiny-note{font-size:10px;line-height:1.6;color:#8a6275;margin:7px 0 0}
 
