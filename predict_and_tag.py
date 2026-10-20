@@ -38,6 +38,7 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import joblib
+import lightgbm as lgb
 import librosa
 import pyloudnorm as pyln
 
@@ -57,7 +58,7 @@ except ImportError:
 # 特征提取（内嵌，ffmpeg 优先）
 # ============================================================
 SR_TARGET = 44100
-MAX_DURATION_SEC = 7200
+MAX_DURATION_SEC = 600   # 与训练端一致：超过按 10 分钟分块加权平均
 HPSS_KERNEL_SIZE = 15
 FFMPEG_TIMEOUT = 1800
 
@@ -297,6 +298,7 @@ def extract_features(audio_path, sr_target=SR_TARGET, chunk_sec=MAX_DURATION_SEC
 MODEL_DIR = 'model_dir'
 LOG_DIR = 'inference_logs'
 FEAT_CACHE_DIR = 'feat_cache'
+FEAT_CACHE_VERSION = 2   # 与 train_eval_export.py 的 CACHE_VERSION 保持一致
 
 WATCH_THR_BASE = -3.0
 CONF_EXTREME_BASE = -2.0
@@ -329,11 +331,43 @@ def try_load_feat_cache(path, cache_dir=FEAT_CACHE_DIR):
         return None
 
 
+def _load_one(path_no_ext):
+    """优先 LightGBM 原生格式（.txt，加载时不反序列化代码），旧 .pkl 兜底。
+
+    用 model_str 而不是 model_file 加载：LightGBM 的 C++ 层在 Windows 上
+    打不开含非 ASCII 字符的路径，先用 Python 读进字符串再喂给它。
+    """
+    txt = path_no_ext + '.txt'
+    pkl = path_no_ext + '.pkl'
+    if os.path.isfile(txt):
+        with open(txt, 'r', encoding='utf-8') as f:
+            return lgb.Booster(model_str=f.read())
+    if os.path.isfile(pkl):
+        return joblib.load(pkl)  # 兼容 v2 时代的 pickle 模型
+    raise FileNotFoundError(f'模型文件缺失：{txt}（也没有 {pkl}）')
+
+
+def _check_compat(meta):
+    """模型与本地特征管线的版本校验——不符直接拒绝，防静默劣化。"""
+    fpv = meta.get('feature_pipeline_version')
+    if fpv is not None and int(fpv) != FEAT_CACHE_VERSION:
+        raise SystemExit(
+            f'[ABORT] 这个模型是用特征管线 v{int(fpv)} 训练的，本地是 v{FEAT_CACHE_VERSION}，'
+            '特征对不上喵。请换用同版本脚本或换一个模型。')
+    fo = meta.get('feature_order')
+    if fo is not None and list(fo) != list(FEATURE_ORDER):
+        raise SystemExit('[ABORT] 模型的特征顺序与本地 FEATURE_ORDER 不一致，拒绝加载喵。')
+    nfr = meta.get('n_features_raw')
+    if nfr is not None and int(nfr) != len(FEATURE_ORDER):
+        raise SystemExit(f'[ABORT] 模型期望 {int(nfr)} 维基础特征，本地是 {len(FEATURE_ORDER)} 维。')
+
+
 def load_models(model_dir):
     """返回 (models, meta)。
 
-    model_type == 'single_lgb'  -> models 是 [LGBMRegressor, ...]
-    其他（v1 旧格式）           -> models 是 [(low, a, gate), ...]
+    model_type == 'single_lgb'   -> models = [Booster/LGBMRegressor, ...]
+    model_type == 'two_stage_lgb' -> models = ([stage1...], [stage2...])
+    其他（v1 旧格式）            -> models = [(low, a, gate), ...]
     """
     meta_path = os.path.join(model_dir, 'meta.json')
     if not os.path.isfile(meta_path):
@@ -341,16 +375,18 @@ def load_models(model_dir):
     with open(meta_path, 'r', encoding='utf-8') as f:
         meta = json.load(f)
 
+    _check_compat(meta)
+
     model_type = meta.get('model_type', 'dual_expert_gate')
     n = int(meta.get('n_ensemble', 1))
     models = []
 
     if model_type == 'single_lgb':
         if n == 1:
-            models.append(joblib.load(os.path.join(model_dir, 'model.pkl')))
+            models.append(_load_one(os.path.join(model_dir, 'model')))
         else:
             for i in range(n):
-                models.append(joblib.load(os.path.join(model_dir, f'model_{i}.pkl')))
+                models.append(_load_one(os.path.join(model_dir, f'model_{i}')))
         return models, meta
 
     if model_type == 'two_stage_lgb':
@@ -359,27 +395,12 @@ def load_models(model_dir):
             out = []
             d = os.path.join(model_dir, sub)
             if n == 1:
-                out.append(joblib.load(os.path.join(d, 'model.pkl')))
+                out.append(_load_one(os.path.join(d, 'model')))
             else:
                 for i in range(n):
-                    out.append(joblib.load(os.path.join(d, f'model_{i}.pkl')))
+                    out.append(_load_one(os.path.join(d, f'model_{i}')))
             return out
         return (_load('stage1'), _load('stage2')), meta
-
-    # ---- v1 旧格式（双专家 + 门控），保留兼容以便回滚 ----
-    if n == 1:
-        models.append((
-            joblib.load(os.path.join(model_dir, 'low_model.pkl')),
-            joblib.load(os.path.join(model_dir, 'a_model.pkl')),
-            joblib.load(os.path.join(model_dir, 'gate_model.pkl'))))
-    else:
-        for i in range(n):
-            models.append((
-                joblib.load(os.path.join(model_dir, f'low_model_{i}.pkl')),
-                joblib.load(os.path.join(model_dir, f'a_model_{i}.pkl')),
-                joblib.load(os.path.join(model_dir, f'gate_model_{i}.pkl'))))
-    return models, meta
-
 
 def _f6(low_p, a_p):
     d = a_p - low_p
