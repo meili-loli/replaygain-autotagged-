@@ -156,7 +156,7 @@
             <div class="window-body hero-body">
               <div class="hero-intro">
                 <div class="welcome-banner"><span>♫ 校准这首歌：① 听 ② 调 ③ mark ♫</span><img src="assets/gif/sparkle.gif" alt=""></div>
-                <p class="hero-kicker">标注中 · 第 <span id="mark-count">004</span> / 867 首 · <span id="track-fmt">FLAC</span></p>
+                <p class="hero-kicker">标注中 · 第 <span id="mark-count">004</span> / <span id="lib-total">867</span> 首 · <span id="track-fmt">FLAC</span></p>
                 <p class="step-hint">跟本喵做：<b>①</b> 点下面播放键听原曲 → <b>②</b> 拖滑杆，调到你耳朵舒服的响度（可按「应用后」对比）→ <b>③</b> 舒服了就点「mark」记下来 ♡</p>
                 <h2 class="hero-title" id="hero-rainbow">melty heart (2024)</h2>
                 <p class="hero-line">LUFS <b>-14.2</b> · true peak <b>-0.81 dBTP</b> · conf <b class="ok" id="track-conf">高</b></p>
@@ -262,10 +262,10 @@
           <div class="window-head blue-head"><span>✿ train.log</span><span>— □ ✕</span></div>
           <div class="window-body">
             <div class="mini-cards">
-              <div class="mini-card"><div class="mini-card-title">model mae</div><b>0.666 dB</b></div>
-              <div class="mini-card"><div class="mini-card-title">cv seeds</div><b>10</b></div>
-              <div class="mini-card"><div class="mini-card-title">features</div><b>42</b></div>
-              <div class="mini-card pink"><div class="mini-card-title">stage</div><b>2 (group)</b></div>
+              <div class="mini-card"><div class="mini-card-title">model mae</div><b id="stat-mae">—</b></div>
+              <div class="mini-card"><div class="mini-card-title">cv seeds</div><b id="stat-seeds">—</b></div>
+              <div class="mini-card"><div class="mini-card-title">features</div><b id="stat-features">—</b></div>
+              <div class="mini-card pink"><div class="mini-card-title">stage</div><b id="stat-stage">—</b></div>
             </div>
             <p class="catline">MAE 0.666 = 平均每首只差 0.67dB，耳朵骗不过的精度喵</p>
             <div class="todo">
