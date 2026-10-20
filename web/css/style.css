@@ -210,7 +210,6 @@ body{
 .hero-title .tt-inner{display:inline-flex;white-space:nowrap;will-change:transform}
 .hero-title .tt-seg{display:inline-flex;white-space:nowrap}
 .hero-title:not(.is-scroll) .tt-inner{width:100%;justify-content:center}
-.hero-title:hover .tt-inner{animation-play-state:paused}
 .hero-line{font-size:10.5px;color:#7d8a96;margin:0 0 10px}
 .hero-line b{color:#5c6b78;font-weight:400}
 .hero-line b.ok{color:#5c9e6e}
