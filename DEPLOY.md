@@ -12,7 +12,7 @@
 免费给 512MB 内存 / 0.1 CPU，闲置 15 分钟休眠（有人访问自动唤醒，约等 1 分钟）。
 适合朋友间小规模使用；大曲库训练会慢，记得配 `RG_WORKERS=1`。
 
-1. 把本文件夹推到一个 GitHub 仓库（新建仓库 → Upload files 或 git push）
+1. 代码仓库已就绪：直接用本仓库 meili-loli/replaygain-autotagged-（Render 连接它即可，无需另建）
 2. 登录 https://render.com（可直接用 GitHub 账号登录）
 3. New → Web Service → 连接刚才的仓库 → Runtime 会自动识别为 Docker
 4. Instance Type 选 **Free**；Environment → Add environment variable：
