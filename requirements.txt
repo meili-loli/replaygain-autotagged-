@@ -22,3 +22,4 @@ sounddevice>=0.4.6
 # 可选：想跑族间模型对比才需要
 # xgboost>=2.0
 # catboost>=1.2
+resampy>=0.4
