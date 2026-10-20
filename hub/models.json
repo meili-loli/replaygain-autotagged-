@@ -1,0 +1,17 @@
+{
+  "models": [
+    {
+      "id": "rg-nyan-contrib-validation-20261020",
+      "name": "rg-model-rg-nyan-contrib-20261020",
+      "author": "rg-nyan-contrib",
+      "date": "2026-10-20",
+      "description": "示例模型：12 首 CC/公有领域真实音乐训练的两阶段模型（验证链路用）",
+      "sample_count": 12,
+      "mae": 1.13,
+      "feature_pipeline_version": 2,
+      "tracks_public": true,
+      "download_url": "https://github.com/meili-loli/replaygain-autotagged-/releases/download/hub-v1/rg-model-rg-nyan-contrib-20261020.zip",
+      "sha256": "33dd4412ba0243594cee262899795ebd0a7f0a5bfb071a7147cca149be165f1b"
+    }
+  ]
+}
