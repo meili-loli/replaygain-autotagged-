@@ -1,0 +1,5 @@
+fastapi>=0.110
+uvicorn>=0.29
+mutagen>=1.47
+python-multipart>=0.0.9
+pyjwt>=2.8

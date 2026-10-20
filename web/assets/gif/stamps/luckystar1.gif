@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <link rel="icon" type="image/x-icon" href="/favicon/palmtrees.gif">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pixel safari - 404</title>
+    <link href="/style.css" rel="stylesheet" type="text/css" media="all">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+    <style>
+    texthover { 
+display: inline-block; 
+transition: .2s ease; 
+} 
+#texthover:hover { 
+transform: translateY(-5%);
+}
+    </style>
+  </head>
+  <body>
+        <div id="container">
+            <div id="headerArea">
+                <div id="header" style="height: 90px;"></div>
+                <a href="https://pixelsafari.neocities.org/">
+                  <span class="link-spanner"></span>
+                 </a>
+                <nav id="navbar" style="margin-bottom: 0px;">
+                    <ul>
+                        <li id="texthover"><a href="https://pixelsafari.neocities.org/dividers/">Dividers</a></li>
+                        <li id="texthover"><a href="https://pixelsafari.neocities.org/favicon/">Favicon</a></li>
+                        <li id="texthover"><a href="https://pixelsafari.neocities.org/stamps/">Stamps</a></li>
+                        <li id="texthover"><a href="https://pixelsafari.neocities.org/blinkies/">Blinkies</a></li>
+                        <li id="texthover"><a href="https://pixelsafari.neocities.org/buttons/">Buttons</a></li>
+                        <li id="texthover"><a href="https://pixelsafari.neocities.org/text/">Text</a></li>
+                        <li id="texthover"><a href="https://pixelsafari.neocities.org/misc/">Misc.</a></li>
+                    </ul>
+                </nav>
+            </div>
+
+            <div id="flex">
+                
+                <main>
+                    <center><h1><p style="font-family: Arcade">Did you get lost?</p></h1>
+                    <h2><p style="font-family: PixelO">the page you're looking for doesn't exist</p></h2>
+                    <p><img src="https://64.media.tumblr.com/ca70f313d611cb0b412795b7cd166b96/7b9410c0665beb27-2a/s400x600/c94c85bb73c40db8af15157c1505137efaa3a77d.pnj"/></p></center>
+                </main>
+                
+            </div>
+            <footer id="footer" style="margin-top: 0px;"><strong><a href="https://pixelsafari.neocities.org/about/">About</a> - <a href="https://pixelsafari.neocities.org/credits/">Credits</a> - <a href="https://pixelsafari.neocities.org/updates/">Updates</a> - <a href="https://pixelsafari.neocities.org/links/">Links</a> - <a href="https://pixelsafari.neocities.org/links/directory/">Directory</a> - <a href="https://pixelsafari.123guestbook.com/" target="_blank">Guestbook</a></strong></footer>
+        </div>
+  </body>
+</html>

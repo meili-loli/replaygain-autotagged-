@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: replaygain-nyan
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/config
+    envVars:
+      - key: RG_ACCESS_CODE
+        sync: false          # 在 Render 后台填你的访问码
+      - key: RG_WORKERS
+        value: "1"           # 免费档 512MB，限制并发防 OOM

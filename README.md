@@ -419,3 +419,18 @@ MIT
 ---
 
 **喵喵喵～祝你听歌愉快！🐾**
+
+## 网页版 replaygain-nyan
+
+图形界面的标注/训练/写标签工具（本仓库 `web/` 目录）：
+
+- **本地跑**：双击仓库根目录的 `启动.bat`（首次自动装依赖），
+  浏览器自动打开 http://127.0.0.1:8792
+- **云端跑**：仓库自带 `Dockerfile` / `render.yaml`，Render 等平台一键部署，
+  部署步骤见 `DEPLOY.md`
+- **模型市场**：训练好的模型可发布到 `hub/models.json` 索引 +
+  Releases，别人在「④ 写标签」里直接下载使用（规范见 `MODEL_HUB.md`，
+  发布用 `model_export.py` 打包 + `publish_model.py` 一键上传）
+
+运行依赖：`pip install -r web/requirements.txt -r requirements.txt`，
+特征提取需要 ffmpeg（Windows 也可用 soundfile 回退）。

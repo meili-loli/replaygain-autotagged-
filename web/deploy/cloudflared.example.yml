@@ -1,0 +1,15 @@
+# cloudflared 隧道配置样例
+# 用法：
+#   1. 安装 cloudflared → https://developers.cloudflare.com/cloudflare/one-connections/connect-devices/downloads/
+#   2. cloudflared tunnel login
+#   3. cloudflared tunnel create rg-nyan     （会生成 credentials-file 路径）
+#   4. 复制本文件为 cloudflared.yml，把下面三个 <> 占位符改成你自己的
+#   5. cloudflared tunnel route dns rg-nyan rg-nyan.你的域名.com
+#   6. cloudflared tunnel --config cloudflared.yml run rg-nyan
+
+tunnel: <tunnel-UUID>
+credentials-file: <cloudflared 目录>\<tunnel-UUID>.json
+ingress:
+  - hostname: rg-nyan.<你的域名>.com
+    service: http://127.0.0.1:8792
+  - service: http_status:404

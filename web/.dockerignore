@@ -1,0 +1,6 @@
+server_logs/
+uploads/
+__pycache__/
+**/__pycache__/
+*.log
+.git/

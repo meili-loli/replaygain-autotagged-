@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffeaf4"/>
+      <stop offset="1" stop-color="#ffd0e4"/>
+    </linearGradient>
+    <pattern id="stripes" width="86" height="86" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="86" height="86" fill="url(#bg)"/>
+      <rect width="43" height="86" fill="rgba(255,255,255,.5)"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="300" fill="url(#stripes)"/>
+  <circle cx="830" cy="150" r="210" fill="#ffffff" opacity=".38"/>
+
+  <!-- 星星与爱心 -->
+  <g fill="#ffffff" stroke="#f5b8ce" stroke-width="2.5">
+    <path d="M150 34 Q154 56 176 60 Q154 64 150 86 Q146 64 124 60 Q146 56 150 34 Z"/>
+    <path d="M1050 46 Q1053 62 1070 66 Q1053 70 1050 86 Q1047 70 1030 66 Q1047 62 1050 46 Z"/>
+    <path d="M620 200 Q622 212 634 215 Q622 218 620 230 Q618 218 606 215 Q618 212 620 200 Z"/>
+  </g>
+  <g fill="#f9c9dc">
+    <path d="M60 170 Q62 182 74 185 Q62 188 60 200 Q58 188 46 185 Q58 182 60 170 Z"/>
+    <path d="M960 30 Q962 40 972 43 Q962 46 960 56 Q958 46 948 43 Q958 40 960 30 Z"/>
+    <path d="M1120 200 Q1123 214 1138 218 Q1123 222 1120 236 Q1117 222 1102 218 Q1117 214 1120 200 Z"/>
+  </g>
+  <g fill="#f47ba6" opacity=".9">
+    <path d="M420 40 c-3-6-12-4-12 2 0 5 8 9 12 13 4-4 12-8 12-13 0-6-9-8-12-2z"/>
+    <path d="M1005 226 c-3-6-12-4-12 2 0 5 8 9 12 13 4-4 12-8 12-13 0-6-9-8-12-2z"/>
+  </g>
+
+  <!-- 贴纸字：白描边粉字 -->
+  <g transform="rotate(-5 250 150)" font-family="'DotGothic16','MS UI Gothic','Yu Gothic',Tahoma,sans-serif">
+    <text x="256" y="182" text-anchor="middle" font-size="118" fill="#d8629c" opacity=".55">ゲイン!</text>
+    <text x="250" y="175" text-anchor="middle" font-size="118" fill="#f06ba8" stroke="#ffffff" stroke-width="16" stroke-linejoin="round" paint-order="stroke">ゲイン!</text>
+    <text x="250" y="222" text-anchor="middle" font-size="19" letter-spacing="9" fill="#b95f86">REPLAYGAIN-NYAN</text>
+  </g>
+
+  <!-- 双马尾耳机娘（占位原创角色，可整张替换为自己的横幅 GIF） -->
+  <g transform="translate(830,0)">
+    <path d="M-70 120 C -150 150 -162 240 -122 300 L -40 300 C -80 240 -60 170 -28 150 Z" fill="#a8d4ea" stroke="#7fa8c0" stroke-width="3"/>
+    <path d="M70 120 C 150 150 162 240 122 300 L 40 300 C 80 240 60 170 28 150 Z" fill="#a8d4ea" stroke="#7fa8c0" stroke-width="3"/>
+    <rect x="-72" y="112" width="26" height="16" rx="6" fill="#2b2b33"/>
+    <rect x="46" y="112" width="26" height="16" rx="6" fill="#2b2b33"/>
+    <ellipse cx="0" cy="150" rx="95" ry="90" fill="#ffe9e2" stroke="#6b5d66" stroke-width="3"/>
+    <path d="M-95 135 C -90 68 -40 46 0 44 C 40 46 90 68 95 135 C 70 98 40 90 22 94 C 10 76 -10 76 -22 94 C -40 90 -70 98 -95 135 Z" fill="#bfe3f5" stroke="#7fa8c0" stroke-width="3"/>
+    <path d="M-60 76 C -30 60 30 60 60 76" stroke="#e8f6fd" stroke-width="6" fill="none" opacity=".85" stroke-linecap="round"/>
+    <path d="M0 44 C 6 28 22 24 32 28" stroke="#a8d4ea" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M-92 122 C -70 34 70 34 92 122" stroke="#2b2b33" stroke-width="15" fill="none" stroke-linecap="round"/>
+    <rect x="-110" y="136" width="28" height="54" rx="11" fill="#2b2b33"/>
+    <rect x="-103" y="148" width="14" height="30" rx="6" fill="#f06ba8"/>
+    <rect x="82" y="136" width="28" height="54" rx="11" fill="#2b2b33"/>
+    <rect x="89" y="148" width="14" height="30" rx="6" fill="#f06ba8"/>
+    <path d="M-52 170 Q-38 154 -24 170" stroke="#5a4a52" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M24 170 Q38 154 52 170" stroke="#5a4a52" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="-64" cy="190" rx="16" ry="8" fill="#ffb9c8" opacity=".85"/>
+    <ellipse cx="64" cy="190" rx="16" ry="8" fill="#ffb9c8" opacity=".85"/>
+    <path d="M-12 196 Q0 210 12 196 Z" fill="#d4577e" stroke="#a8424f" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M-70 300 C -66 252 -30 234 0 234 C 30 234 66 252 70 300 Z" fill="#fbfdff" stroke="#6b5d66" stroke-width="3"/>
+    <path d="M-16 236 L0 252 L16 236" fill="none" stroke="#f06ba8" stroke-width="4" stroke-linecap="round"/>
+    <path d="M44 262 C 74 258 100 240 112 214 L 134 222 C 124 254 92 276 52 282 Z" fill="#fbfdff" stroke="#6b5d66" stroke-width="3"/>
+    <circle cx="126" cy="216" r="15" fill="#ffe9e2" stroke="#6b5d66" stroke-width="3"/>
+    <text x="152" y="186" font-size="30" fill="#f06ba8" transform="rotate(12 152 186)" font-family="sans-serif">♪</text>
+  </g>
+</svg>

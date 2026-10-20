@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>replaygain-nyan ♫ personal gain tool</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=32">
+</head>
+<body>
+
+  <div id="allcontent" class="app">
+
+    <!-- ═══ 侧栏 ═══ -->
+    <aside class="sidebar">
+      <section class="retro-window brand-window">
+        <div class="window-head pink-head"><span>♥ replaygain-nyan</span><span>v2</span></div>
+        <div class="window-body">
+          <div class="pb-title">自动打标机 ♪</div>
+          <p class="brand-sub">手标口味 → 训练 → 全库写入，跟着三步走喵 ♡</p>
+        </div>
+      </section>
+
+      <section class="retro-window">
+        <div class="window-head"><span>♡ notice · 公告</span><span>✕</span></div>
+        <div class="window-body">
+          <button class="browser-button" id="notice-open" type="button" style="width:100%">♡ 第一次来的看这里</button>
+        </div>
+      </section>
+
+      <section class="retro-window">
+        <div class="window-head"><span>♡ guide · 三步上手</span><span>从这开始</span></div>
+        <div class="window-body">
+          <div class="profile-box">
+            <a class="guide-line" href="#" data-goview="annotate"><b class="gstep">1</b><span>标几首：滑到刚刚好就 mark ✓</span></a>
+            <a class="guide-line" href="#" data-goview="train"><b class="gstep">2</b><span>训练：本喵记住你的口味 ♡</span></a>
+            <a class="guide-line" href="#" data-goview="write"><b class="gstep">3</b><span>写入：dry-run 后一键全库喵</span></a>
+            <p class="pb-tip">点左上角 ♡ 公告能再看一遍背景介绍 ♡</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="retro-window">
+        <div class="window-head"><span>☆ navigation</span><span>— □ ✕</span></div>
+        <div class="window-body">
+          <nav class="nav-list">
+            <a href="#" class="nav-view active" data-goview="annotate"><span class="nav-sticker"><img src="assets/gif/bow.gif" alt=""></span>① 标注台</a>
+            <a href="#" class="nav-view" data-goview="library"><span class="nav-sticker"><img src="assets/gif/cat10.gif" alt=""></span>② 曲库</a>
+            <a href="#" class="nav-view" data-goview="train"><span class="nav-sticker"><img src="assets/gif/flower.gif" alt=""></span>③ 训练</a>
+            <a href="#" class="nav-view" data-goview="write"><span class="nav-sticker"><img src="assets/gif/heartbow.gif" alt=""></span>④ 写标签</a>
+          </nav>
+        </div>
+      </section>
+
+      <section class="retro-window">
+        <div class="window-head"><span>♡ stamps<i class="wtag">装饰</i></span><span>— □ ✕</span></div>
+        <div class="window-body">
+          <div class="stamp-wall solo">
+            <span class="stamp-frame"><img src="assets/gif/stamps/luckystar3.gif" alt=""></span>
+            <span class="stamp-frame"><img src="assets/gif/stamps/luckystar4.gif" alt=""></span>
+            <span class="stamp-frame"><img src="assets/gif/stamps/animesketch.gif" alt=""></span>
+            <span class="stamp-frame"><img src="assets/gif/stamps/romantic.gif" alt=""></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="retro-window">
+        <div class="window-head"><span>♡ cat gallery<i class="wtag">装饰</i></span><span>✕</span></div>
+        <div class="window-body">
+          <div class="cat-gallery">
+            <img src="assets/gif/cats/cat2.gif" alt="">
+            <img src="assets/gif/cat10.gif" alt="">
+            <img src="assets/gif/cat.gif" alt="">
+            <img src="assets/gif/cat14.gif" alt="">
+            <img src="assets/gif/cat11.gif" alt="">
+            <img src="assets/gif/cat12.gif" alt="">
+            <img src="assets/gif/cat13.gif" alt="">
+            <img src="assets/gif/cat15.gif" alt="">
+          </div>
+          <p class="cat-note">one byte of cuteness per track ♪</p>
+        </div>
+      </section>
+
+      <section class="retro-window">
+        <div class="window-head"><span>desktop buddy<i class="wtag">装饰</i></span><span>✕</span></div>
+        <div class="window-body">
+          <div class="mini-card pink">
+            <img src="assets/gif/anime1.gif" alt="anime buddy" style="width:100%">
+            <p>thanks for stopping by ☆</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="retro-window">
+        <div class="window-head"><span>☆ links<i class="wtag">致谢</i></span><span>✕</span></div>
+        <div class="window-body">
+          <div class="links-list">
+            <a href="https://www.foobar2000.org/" target="_blank" rel="noopener">foobar2000 官网 ↗</a>
+            <a href="https://wiki.hydrogenaud.io/index.php?title=ReplayGain" target="_blank" rel="noopener">ReplayGain Wiki ↗</a>
+            <a href="https://pixelsafari.neocities.org/" target="_blank" rel="noopener">Pixelsafari 素材 ↗</a>
+            <a href="https://gify.pet/" target="_blank" rel="noopener">gify.pet 宠物 ↗</a>
+          </div>
+          <p class="webring-note">页面的素材与组件都站在这些肩膀上 ♡</p>
+        </div>
+      </section>
+
+      <section class="retro-window">
+        <div class="window-head"><span>♛ hit counter<i class="wtag">装饰</i></span><span>✕</span></div>
+        <div class="window-body" style="text-align:center">
+          <p class="hitlabel">you are visitor no.</p>
+          <div class="hitbox">
+            <span class="digit">0</span><span class="digit">0</span><span class="digit">0</span><span class="digit">8</span><span class="digit">6</span><span class="digit">7</span>
+          </div>
+          <p class="hitlabel" style="margin-top:5px">since 2026-10 · nyans counted ♡</p>
+        </div>
+      </section>
+
+      <section class="retro-window">
+        <div class="window-head"><span>♪ ui sounds</span><span>off</span></div>
+        <div class="window-body">
+          <button class="browser-button" id="sound-toggle" type="button">turn on ♪</button>
+          <p class="tiny-note">音效引擎复刻自原站，默认关喵。mp3 放 assets/sfx/ ♡</p>
+        </div>
+      </section>
+
+      <section class="retro-window sticky-note">
+        <div class="window-head"><span>✎ sticky note</span><span>— □ ✕</span></div>
+        <div class="window-body">
+          <textarea class="sticky-text" data-note-key="rg-nyan-note" rows="4" placeholder="随手记：例 008 要复核…（自动保存）"></textarea>
+        </div>
+      </section>
+    </aside>
+
+    <!-- ═══ 主区 ═══ -->
+    <main class="content">
+      <header id="topheader">
+        <div class="header-art slim">
+          <img class="site-banner" src="assets/gif/banner.gif" alt="replaygain-nyan banner">
+          <div class="header-sparkles">♡ ✦ ♡ ✦ ♡</div>
+          <div class="header-title">replaygain-nyan</div>
+        </div>
+        <div class="browser-strip"></div>
+      </header>
+
+      <!-- ① 标注台 -->
+      <div class="view active" id="view-annotate">
+        <div class="ws-head">
+          <b class="ws-step">STEP 1</b>
+          <h2 class="ws-title">标注台 <small>annotate — 拖滑杆到刚刚好，mark 给本喵记下 ♪</small></h2>
+        </div>
+        <div class="ws-duo">
+          <section class="retro-window hero-window">
+            <div class="window-head"><span><b class="step">STEP 1</b>♡ annotate.exe</span><span>— □ ✕</span></div>
+            <div class="window-body hero-body">
+              <div class="hero-intro">
+                <div class="welcome-banner"><span>♫ 校准这首歌：① 听 ② 调 ③ mark ♫</span><img src="assets/gif/sparkle.gif" alt=""></div>
+                <p class="hero-kicker">标注中 · 第 <span id="mark-count">004</span> / 867 首 · <span id="track-fmt">FLAC</span></p>
+                <p class="step-hint">跟本喵做：<b>①</b> 点下面播放键听原曲 → <b>②</b> 拖滑杆，调到你耳朵舒服的响度（可按「应用后」对比）→ <b>③</b> 舒服了就点「mark」记下来 ♡</p>
+                <h2 class="hero-title" id="hero-rainbow">melty heart (2024)</h2>
+                <p class="hero-line">LUFS <b>-14.2</b> · true peak <b>-0.81 dBTP</b> · conf <b class="ok" id="track-conf">高</b></p>
+                <div class="gain-panel">
+                  <div class="gain-row">
+                    <b class="stepno">2</b><span class="gain-num" id="hero-gain">-3.5</span>
+                    <span class="gain-db">dB</span>
+                    <span class="ab-chipset">
+                      <button class="ab-chip active" id="ab-orig" type="button">原曲</button>
+                      <button class="ab-chip" id="ab-applied" type="button">应用后</button>
+                    </span>
+                  </div>
+                  <input class="gain-fader" id="gain-fader" type="range" min="-12" max="6" step="0.5" value="-3.5" aria-label="目标增益">
+                  <div class="fader-scale"><span>-12</span><span>-9</span><span>-6</span><span>-3</span><span>0</span><span>+3</span><span>+6</span></div>
+                  <div class="gain-out">out: <b id="lufs-out">-17.7 LUFS</b> · target -18.0 · 許容差 ±1.0</div>
+                  <div class="annotate-actions">
+                    <b class="stepno">3</b><button class="browser-button" id="btn-skip" type="button">◀◀ 换一首</button>
+                    <button class="browser-button primary" id="btn-mark" type="button">✔ 就这样，mark ♡</button>
+                    <button class="browser-button" id="btn-flag" type="button">⚑ 拿不准</button>
+                  </div>
+                  <div class="mark-log" id="mark-log" aria-live="polite"></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <div class="ws-side">
+            <section class="retro-window" id="music">
+              <div class="window-head peach-head"><span><b class="step">STEP 1</b>♫ player · A/B 试听</span><span><button class="win-btn" id="music-min" type="button" aria-label="Minimize music player">_</button> □ ✕</span></div>
+              <div class="window-body music-body" id="music-content">
+                <div class="music-art" aria-hidden="true"></div>
+                <div class="music-details">
+                  <div class="now-playing"><b class="stepno">1</b>先听原曲</div>
+                  <div class="track-name">caramelldansen</div>
+                  <div class="track-artist">caramella girls</div>
+                  <div class="music-sliders">
+                    <button class="browser-button small" id="prev-track" type="button" aria-label="上一首">◀◀</button>
+                    <button class="browser-button small" id="playpause-track" type="button" aria-label="播放">&#9654;</button>
+                    <button class="browser-button small" id="next-track" type="button" aria-label="下一首">▶▶</button>
+                    <input class="seek-slider" id="seek-slider" type="range" min="0" max="100" value="0" aria-label="进度">
+                    <span class="current-time" id="current-time">0:00</span> /
+                    <span class="total-duration" id="total-duration">0:00</span>
+                  </div>
+                  <div class="music-vol">vol
+                    <input class="volume-slider" id="volume-slider" type="range" min="0" max="100" value="80" aria-label="音量">
+                  </div>
+                  <div class="music-note">占位曲是静音的喵 · 接上曲库就有声 ♪</div>
+                  <div class="music-error" id="music-error" hidden>音频加载失败了喵</div>
+                </div>
+                <audio id="music-audio" preload="metadata"></audio>
+              </div>
+            </section>
+
+            <section class="retro-window">
+              <div class="window-head"><span>♡ tip · 小贴士</span><span>✕</span></div>
+              <div class="window-body">
+                <div class="visitor-note">
+                  <img class="visitor-img" src="assets/gif/angel-heart.gif" alt="" style="width:48px">
+                  <p class="tip-fade" id="tip-text"><b>tip 1：</b>「待复核 / 打滑?」的标签先人工复核，别直接喂给模型学坏喵</p>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+      <!-- ② 曲库 -->
+      <div class="view" id="view-library">
+        <div class="ws-head">
+          <b class="ws-step any">随时</b>
+          <h2 class="ws-title">曲库 <small>library — 点任意一行选中，它会进标注台喵</small></h2>
+        </div>
+        <section class="retro-window">
+          <div class="window-head"><span id="lib-count">♡ library.db · 867 首</span><span>— □ ✕</span></div>
+          <div class="window-body">
+            <div class="lrow lhead"><span>no.</span><span>track</span><span>fmt</span><span>gain</span><span>conf</span><span>state</span></div>
+            <div class="lib-scroll big" id="lib-scroll"></div>
+            <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+              <button class="browser-button" id="btn-upload" type="button">☁ 上传歌曲</button>
+              <input type="file" id="upload-input" multiple hidden
+                accept=".flac,.mp3,.m4a,.ogg,.opus,.wav,.aiff,.aif,.ape,.wv">
+              <button class="browser-button" id="btn-download-zip" type="button">⬇ 下载打完标签</button>
+              <button class="browser-button" id="btn-session-reset" type="button">✕ 退出云端会话</button>
+            </div>
+            <div class="nprog" id="upload-prog" style="display:none;margin-top:6px"><i></i></div>
+            <p class="ntxt" id="upload-txt" style="min-height:14px;margin:4px 0 0"></p>
+            <div style="margin-top:8px">
+              <button class="browser-button" id="btn-music-dir" type="button">♥ 更换音乐目录</button>
+            </div>
+            <div id="music-dir-panel" hidden></div>
+            <p class="catline">「高」可以放心自动写入，其他先给本喵过目 ♡ 选中后回 ① 标注台细调</p>
+          </div>
+        </section>
+      </div>
+
+      <!-- ③ 训练 -->
+      <div class="view" id="view-train">
+        <div class="ws-head">
+          <b class="ws-step">STEP 2</b>
+          <h2 class="ws-title">训练 <small>train — 标完几首就回来喂一次，越喂越准喵</small></h2>
+        </div>
+        <section class="retro-window">
+          <div class="window-head blue-head"><span>✿ train.log</span><span>— □ ✕</span></div>
+          <div class="window-body">
+            <div class="mini-cards">
+              <div class="mini-card"><div class="mini-card-title">model mae</div><b>0.666 dB</b></div>
+              <div class="mini-card"><div class="mini-card-title">cv seeds</div><b>10</b></div>
+              <div class="mini-card"><div class="mini-card-title">features</div><b>42</b></div>
+              <div class="mini-card pink"><div class="mini-card-title">stage</div><b>2 (group)</b></div>
+            </div>
+            <p class="catline">MAE 0.666 = 平均每首只差 0.67dB，耳朵骗不过的精度喵</p>
+            <div class="todo">
+              <b>训练队列</b>
+              <ul>
+                <li>重建特征缓存（867 files）</li>
+                <li>stage-1 LGB 回归 · 5 seeds</li>
+                <li>组信号 stage-2（dir/album/artist）</li>
+              </ul>
+            </div>
+            <div class="nprog-wrap">
+              <button class="browser-button" id="btn-train" type="button" style="width:100%">▶ 开始训练喵</button>
+              <div class="nprog" id="train-prog" role="progressbar" aria-label="训练进度" aria-valuenow="8" aria-valuemin="0" aria-valuemax="100"><i></i></div>
+              <p class="ntxt" id="train-txt">waiting for marks… 喵</p>
+            </div>
+            <div class="todo" id="model-card-box" hidden style="margin-top:10px">
+              <b>模型卡 ♡ 发布用</b>
+              <div id="model-card-body" style="font-size:11px;line-height:1.8;margin:6px 0"></div>
+              <div style="display:flex;gap:6px">
+                <input id="card-author" placeholder="署名" style="flex:1;min-width:0;padding:4px 6px;border:1px solid #e5a4b9;border-radius:4px;font:inherit">
+                <input id="card-note" placeholder="一句话介绍这个口味" style="flex:2;min-width:0;padding:4px 6px;border:1px solid #e5a4b9;border-radius:4px;font:inherit">
+              </div>
+              <label class="chk-row"><input type="checkbox" id="card-publish-tracks">公开标注歌单（含歌名/歌手/增益）</label>
+              <button class="browser-button" id="btn-pack-model" type="button" style="width:100%;margin-top:4px">⬇ 打包模型（生成发布 zip）</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ④ 写标签 -->
+      <div class="view" id="view-write">
+        <div class="ws-head">
+          <b class="ws-step">STEP 3</b>
+          <h2 class="ws-title">写标签 <small>write — dry-run 先看，execute 才动真格喵</small></h2>
+        </div>
+        <section class="retro-window">
+          <div class="window-head pink-head"><span>✎ write.exe · 批量写入</span><span>— □ ✕</span></div>
+          <div class="window-body">
+            <div class="todo">
+              <b>写入选项</b>
+              <label class="chk-row"><input type="checkbox" checked>skip tagged <span class="dim">712</span></label>
+              <label class="chk-row"><input type="checkbox" checked>仅高可信 <span class="dim">131</span></label>
+              <label class="chk-row"><input type="checkbox">写入 R128 <span class="dim">—</span></label>
+              <label class="chk-row"><input type="checkbox" id="chk-dry" checked>先 dry-run <span class="dim">rec ✓</span></label>
+            </div>
+            <div class="todo">
+              <b>模型来源</b>
+              <label class="chk-row"><input type="radio" name="model-src" value="mine" checked>我训练的模型 <span class="dim" id="mine-model-hint"></span></label>
+              <label class="chk-row"><input type="radio" name="model-src" value="hub">从 hub 挑一个 <span class="dim" id="hub-count">—</span></label>
+              <div id="hub-list" hidden style="max-height:160px;overflow:auto;border:1px dotted #e5a4b9;border-radius:6px;padding:4px;margin:2px 0 4px;background:#fffafc"></div>
+              <label class="chk-row"><input type="radio" name="model-src" value="import">导入模型包 zip</label>
+              <input type="file" id="import-input" accept=".zip" hidden>
+              <p class="ntxt" id="model-src-txt" style="margin:2px 0 0"></p>
+            </div>
+            <div class="annotate-actions">
+              <button class="browser-button primary" id="btn-execute" type="button">▶ execute</button>
+            </div>
+            <div class="mark-log" id="write-log" aria-live="polite"></div>
+          </div>
+        </section>
+      </div>
+
+      <footer class="bottom-buttons">
+        <div class="button-label">— replaygain-nyan · handmade with ♥ · best viewed at 100% zoom ♡ —</div>
+        <div class="button-row">
+          <img src="assets/gif/bl-basket.gif" alt="" class="blinkie">
+          <span class="btn88 b1">RG-NYAN ★</span>
+          <span class="btn88 b4">猫 CERTIFIED</span>
+          <span class="btn88 b2">MAE 0.666</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- ═══ 自动弹出公告 ═══ -->
+  <div class="notice-mask" id="notice" hidden>
+    <section class="retro-window notice-pop" role="dialog" aria-label="公告">
+      <div class="window-head pink-head"><span>♡ 公告 · 第一次来的先看这里</span><span><button class="win-btn" id="notice-x" type="button" aria-label="关闭">✕</button></span></div>
+      <div class="window-body notice-body">
+        <p class="notice-h">◈ 项目背景</p>
+        <p>想校准一首歌？只要三步：<b>① 播放听</b> → <b>② 拖滑杆调响度</b> → <b>③ mark 记下来</b>。标过几首后训练，本喵就学会你的口味，全库自动变刚刚好喵 ♪</p>
+        <p class="notice-h">◈ 它能干什么</p>
+        <p>① 标注：拖滑杆到你觉得刚刚好，mark ✓<br>② 训练：把口味喂给本喵学习<br>③ 写入：dry-run 预览后，一键写进全库的 ReplayGain 标签喵</p>
+        <p class="notice-h">◈ 具体怎么用</p>
+        <p>侧栏「① 标注台」开始，跟着每扇窗左上角的 STEP 徽章走就行；曲库随时点歌换着标 ♡</p>
+        <label class="chk-row"><input type="checkbox" id="notice-forever">下次不再自动弹出</label>
+        <button class="browser-button primary" id="notice-ok" type="button" style="width:100%;margin-top:6px">♡ 明白了，开始喵</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- ═══ 访问码验证 ═══ -->
+  <div class="notice-mask" id="auth-mask" hidden>
+    <section class="retro-window notice-pop" role="dialog" aria-label="访问验证">
+      <div class="window-head pink-head"><span>♠ 私人访问码 · private gate</span><span><button class="win-btn" id="auth-x" type="button" aria-label="关闭">✕</button></span></div>
+      <div class="window-body notice-body">
+        <p class="notice-h">◈ 这个站点开了访问码</p>
+        <p>这是站主的私人部署喵～找站主要一个访问码，填进来就能用啦 ♡</p>
+        <input id="auth-code" placeholder="访问码 access code" autocomplete="off"
+          style="width:100%;padding:5px 8px;border:1px solid #e5a4b9;border-radius:4px;font:inherit;background:#fff">
+        <button class="browser-button primary" id="auth-ok" type="button" style="width:100%;margin-top:6px">♥ 进去喵</button>
+        <p class="ntxt" id="auth-msg" style="min-height:14px;margin:6px 0 0"></p>
+      </div>
+    </section>
+  </div>
+
+  <script src="js/app.js?v=31"></script>
+</body>
+</html>
