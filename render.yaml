@@ -3,7 +3,7 @@ services:
     name: replaygain-nyan
     runtime: docker
     plan: free
-    healthCheckPath: /api/config
+    healthCheckPath: /api/auth/status
     envVars:
       - key: RG_ACCESS_CODE
         sync: false          # 在 Render 后台填你的访问码
