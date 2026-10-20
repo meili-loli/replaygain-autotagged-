@@ -22,6 +22,7 @@
   let curIdx = -1;
   const fader = $("gain-fader");
   const volumeSlider = $("volume-slider");
+  const seekSlider = $("seek-slider");
   const currTrack = $("music-audio");
   const playpauseBtn = $("playpause-track");
   const soundToggle = $("sound-toggle");
@@ -66,6 +67,32 @@
   currTrack.addEventListener("error", () => {
     addLog(markLog, "这首歌浏览器播不了喵（格式限制）——训练和写标签不受影响 ♡");
   });
+
+  /* 播放器时间 / 进度条接线 */
+  let seekingBar = false;
+  const fmtTime = s => {
+    if (!isFinite(s) || s < 0) s = 0;
+    s = Math.floor(s);
+    return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+  };
+  currTrack.addEventListener("loadedmetadata", () => {
+    seekSlider.max = Math.floor(currTrack.duration) || 0;
+    const td = $("total-duration");
+    if (td) td.textContent = fmtTime(currTrack.duration);
+  });
+  currTrack.addEventListener("timeupdate", () => {
+    const ct = $("current-time");
+    if (ct) ct.textContent = fmtTime(currTrack.currentTime);
+    if (!seekingBar) seekSlider.value = Math.floor(currTrack.currentTime || 0);
+  });
+  seekSlider.addEventListener("pointerdown", () => { seekingBar = true; });
+  seekSlider.addEventListener("pointerup", () => {
+    seekingBar = false;
+    if (isFinite(currTrack.duration) && currTrack.duration > 0) {
+      currTrack.currentTime = Number(seekSlider.value);
+    }
+  });
+  currTrack.addEventListener("ended", advance);   // 播完自动切下一首待标注
 
   /* ================= 曲库 + 标注台联动 ================= */
   function confCls(t) { return t.mark !== null && t.mark !== undefined ? "ok" : "mid"; }
