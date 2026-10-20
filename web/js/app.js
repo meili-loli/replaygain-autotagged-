@@ -367,7 +367,8 @@
       const box = $("model-card-box");
       if (!d.exists) { box.hidden = true; return; }
       box.hidden = false;
-      const m = d.meta || {}, c = d.card || {}, st = c.oof_stats || {};
+      const m = d.meta || {}, c = d.card || {};
+      const st = (c.oof_stats && Object.keys(c.oof_stats).length) ? c.oof_stats : (m.oof_stats || {});
       $("model-card-body").innerHTML =
         "类型 <b>" + escHtml(m.model_type || "?") + "</b> · " + (m.n_ensemble || 1) +
         " seed · 样本 <b>" + (m.n_train_samples || "?") + "</b> 首 · MAE <b>" +
