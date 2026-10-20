@@ -375,6 +375,11 @@
         "特征管线 v" + (m.feature_pipeline_version ?? "?") + " · lightgbm " +
         escHtml(m.lightgbm || "?") + " · 训练于 " + escHtml(m.trained_at || "?");
       $("mine-model-hint").textContent = "MAE " + (st.mae != null ? Number(st.mae).toFixed(2) : "?");
+      // 训练页指标卡
+      $("stat-mae").textContent = st.mae != null ? Number(st.mae).toFixed(3) + " dB" : "—";
+      $("stat-seeds").textContent = (m.n_ensemble || "—") + " seed";
+      $("stat-features").textContent = (m.n_features_raw || "—") + " 维";
+      $("stat-stage").textContent = m.group_signal_keys ? "2 (group)" : "1";
     } catch (e) { /* 后端没开时忽略 */ }
   }
 
@@ -598,6 +603,8 @@
     const lc = $("lib-count");
     if (lc) lc.textContent = "♡ library.db · " + d.total + " 首" +
       (d.mode === "cloud" ? " · ☁ 云端会话" : "");
+    const lt = $("lib-total");
+    if (lt) lt.textContent = String(d.total).padStart(3, "0");
   }
   async function boot() {
     if (!(await checkAuth())) return;
