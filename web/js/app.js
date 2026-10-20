@@ -63,6 +63,9 @@
   });
   currTrack.addEventListener("play", () => { playpauseBtn.innerHTML = "&#9646;"; isPlaying = true; });
   currTrack.addEventListener("pause", () => { playpauseBtn.innerHTML = "&#9654;"; isPlaying = false; });
+  currTrack.addEventListener("error", () => {
+    addLog(markLog, "这首歌浏览器播不了喵（格式限制）——训练和写标签不受影响 ♡");
+  });
 
   /* ================= 曲库 + 标注台联动 ================= */
   function confCls(t) { return t.mark !== null && t.mark !== undefined ? "ok" : "mid"; }
@@ -74,13 +77,19 @@
       row.type = "button";
       row.className = "lrow" + (i === curIdx ? " sel" : "");
       const cc = t.mark !== null && t.mark !== undefined ? "ok" : "mid";
+      let stateHtml = t.state;
+      if (t.format_ok === false) {
+        stateHtml = '<b style="color:#c2456b">格式不支持</b>';
+      } else if (t.playable === false) {
+        stateHtml = t.state + '<br><span style="font-size:9px;color:#a58a97">浏览器不试听</span>';
+      }
       row.innerHTML =
         '<span>' + t.no + '</span>' +
         '<span class="tname">' + t.file + '</span>' +
         '<span>' + t.fmt + '</span>' +
         '<span>' + (t.mark !== null && t.mark !== undefined ? fmtDb(t.mark) : "—") + '</span>' +
         '<span class="' + cc + '">' + t.conf + '</span>' +
-        '<span>' + t.state + '</span>';
+        '<span>' + stateHtml + '</span>';
       row.addEventListener("click", () => { selectTrack(i); goView("annotate"); });
       box.appendChild(row);
     });
@@ -339,18 +348,36 @@
   /* ================= 启动：读配置 + 拉真曲库 ================= */
   function dirFormHTML(lead) {
     return '<div style="padding:10px;font-size:11px;line-height:1.9">' + (lead || "") +
-      "填你的音乐文件夹路径，保存后自动扫描：</div>" +
+      "填你的音乐文件夹路径（如 D:\\Music），保存后自动扫描：</div>" +
       '<div style="display:flex;gap:6px;margin-top:8px">' +
-      '<input id="music-dir-input" placeholder="D:\\\\Music" style="flex:1;min-width:0">' +
-      '<button class="browser-button" id="music-dir-save" type="button">保存并扫描</button></div>';
+      '<input id="music-dir-input" placeholder="D:\\Music" style="flex:1;min-width:0">' +
+      '<button class="browser-button" id="music-dir-save" type="button">保存并扫描</button></div>' +
+      '<p class="ntxt" id="dir-form-msg" style="min-height:14px;margin:4px 0 0"></p>';
   }
   function wireDirForm() {
     $("music-dir-save").addEventListener("click", async () => {
       const v = $("music-dir-input").value.trim();
-      if (!v) return;
-      const r = await fetch("/api/config", { method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ music_dir: v }) });
-      if (r.ok) location.reload();
+      const msg = $("dir-form-msg");
+      if (!v) { msg.textContent = "先填一个真实存在的文件夹路径喵"; return; }
+      const save = $("music-dir-save");
+      save.disabled = true;
+      const oldText = save.textContent;
+      save.textContent = "扫描中…";
+      msg.textContent = "";
+      try {
+        const r = await fetch("/api/config", { method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ music_dir: v }) });
+        if (r.ok) {
+          location.reload();
+        } else {
+          const d = await r.json().catch(() => ({}));
+          save.disabled = false; save.textContent = oldText;
+          msg.textContent = "保存失败喵：" + (d.detail || r.status);
+        }
+      } catch (e) {
+        save.disabled = false; save.textContent = oldText;
+        msg.textContent = "连不上后端喵";
+      }
     });
   }
   $("btn-music-dir").addEventListener("click", () => {
@@ -441,7 +468,12 @@
     } catch (e) { /* 后端没开时忽略 */ }
   }
 
-  $("btn-upload").addEventListener("click", () => $("upload-input").click());
+  $("btn-upload").addEventListener("click", () => {
+    const b = $("btn-upload");
+    b.textContent = "已打开文件选择框…";
+    setTimeout(() => { b.textContent = "☁ 上传歌曲"; }, 2500);
+    $("upload-input").click();
+  });
   $("upload-input").addEventListener("change", () => {
     const fs = $("upload-input").files;
     if (!fs.length) return;
@@ -480,23 +512,41 @@
     $("upload-input").value = "";
   });
   $("btn-download-zip").addEventListener("click", async () => {
-    const r = await fetch("/api/session/download");
-    if (!r.ok) {
-      $("upload-txt").textContent = "下载不了喵：还没有云端会话（先上传几首歌）";
-      return;
+    const btn = $("btn-download-zip");
+    btn.disabled = true;
+    const old = btn.textContent;
+    btn.textContent = "打包中…";
+    try {
+      const r = await fetch("/api/session/download");
+      if (!r.ok) {
+        $("upload-txt").textContent = "下载不了喵：还没有云端会话（先上传几首歌）";
+        return;
+      }
+      const blob = await r.blob();
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "replaygain-tagged.zip";
+      a.click();
+      URL.revokeObjectURL(a.href);
+      $("upload-txt").textContent = "打包下载完成 ♡ 记得退出会话再走喵";
+    } catch (e) {
+      $("upload-txt").textContent = "下载失败喵（网络/后端？）";
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "⬇ 下载打完标签";
     }
-    const blob = await r.blob();
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "replaygain-tagged.zip";
-    a.click();
-    URL.revokeObjectURL(a.href);
-    $("upload-txt").textContent = "打包下载完成 ♡ 记得退出会话再走喵";
   });
   $("btn-session-reset").addEventListener("click", async () => {
-    await fetch("/api/session/reset", { method: "POST" });
-    $("upload-txt").textContent = "已退出云端会话，回到本地曲库喵";
-    refreshLibrary();
+    if (!confirm("退出会话会清空你上传的歌和全部标注数据喵，确定？")) return;
+    const btn = $("btn-session-reset");
+    btn.disabled = true;
+    try {
+      await fetch("/api/session/reset", { method: "POST" });
+      $("upload-txt").textContent = "已退出云端会话，回到演示曲库喵";
+      refreshLibrary();
+    } finally {
+      btn.disabled = false;
+    }
   });
 
   /* ---- hub 列表开合 / 导入 / 打包发布 ---- */
