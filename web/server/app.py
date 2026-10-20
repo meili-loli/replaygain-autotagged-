@@ -1,4 +1,4 @@
-"""
+﻿"""
 replaygain-nyan 网页端后端
 包装 replaygain-autotagged 真实脚本：曲库扫描 / 标注 CSV / 训练 / 写标签
 运行：python server/app.py   （默认 http://127.0.0.1:8792）
@@ -25,9 +25,45 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.background import BackgroundTask
 
-WEB = Path(__file__).resolve().parent.parent          # replaygain-web/
-PROJECT = WEB.parent / "replaygain-autotagged"        # 真脚本目录
-CSV_PATH = PROJECT / "delta_gain.csv"
+WEB = Path(__file__).resolve().parent.parent          # .../web
+
+# 真脚本目录（train_eval_export.py / predict_and_tag.py 所在处）。
+# 历史布局是「web/ 与 replaygain-autotagged/ 平级」，所以原先写死成
+# WEB.parent / "replaygain-autotagged"。但本仓库是「web/ 直接放在仓库根下」，
+# 那样算出来会是 <repo>/replaygain-autotagged（不存在），导致
+# 曲库扫描 / 训练 / 写标签全部失败。这里按「脚本是否存在」来探测，
+# 两种布局都兼容。
+_SCRIPT_DIR_CANDIDATES = [
+    WEB.parent,                                  # 仓库根（当前布局）
+    WEB.parent / "replaygain-autotagged",        # 旧布局：同级目录
+    WEB.parent.parent,                           # web/ 在子目录里时的上一级
+]
+PROJECT = next(
+    (p for p in _SCRIPT_DIR_CANDIDATES if (p / "predict_and_tag.py").is_file()),
+    WEB.parent,
+)
+
+# 数据目录（delta_gain.csv / model_dir / feat_cache / library_meta.csv 所在处）。
+# 脚本目录和数据目录**不一定在一起**：比如本机是「仓库在 ~/Music/replaygain-nyan，
+# 而模型和标注都在 ~/Music」。所以单独探测：
+#   1) 环境变量 RG_DATA 优先
+#   2) 含 model_dir 或 delta_gain.csv 的候选
+#   3) 兜底 = PROJECT（脚本目录就地存数据，干净 clone 的默认情形）
+_DATA_DIR_CANDIDATES = [os.environ.get("RG_DATA") or ""] + [
+    str(WEB.parent.parent),                      # 上一级（仓库外面的数据）
+    str(WEB.parent),
+    str(WEB.parent / "replaygain-autotagged"),
+]
+DATA = PROJECT
+for _c in _DATA_DIR_CANDIDATES:
+    if not _c:
+        continue
+    _p = Path(_c)
+    if (_p / "model_dir").is_dir() or (_p / "delta_gain.csv").is_file():
+        DATA = _p
+        break
+
+CSV_PATH = DATA / "delta_gain.csv"
 CONFIG_PATH = WEB / "server_config.json"
 LOG_DIR = WEB / "server_logs"
 UPLOADS_ROOT = WEB / "uploads"
@@ -311,7 +347,7 @@ def _start_job(key, cmd: list) -> None:
         lf.write(f"$ {' '.join(cmd)}\n\n".encode("utf-8"))
         lf.flush()
         # Popen 会复制句柄，父进程随后关闭安全
-        proc = subprocess.Popen(cmd, cwd=str(PROJECT), stdout=lf,
+        proc = subprocess.Popen(cmd, cwd=str(DATA), stdout=lf,
                                 stderr=subprocess.STDOUT)
     finally:
         lf.close()
@@ -355,7 +391,7 @@ def api_train_start(request: Request, body: dict = {}):
     if job and job["proc"].poll() is None:
         return {"ok": True, "already": True}
     py = sys.executable
-    model_dir = (root / "model_dir") if mode == "cloud" else (PROJECT / "model_dir")
+    model_dir = (root / "model_dir") if mode == "cloud" else (DATA / "model_dir")
     cmd = [py, str(PROJECT / "train_eval_export.py"),
            "--csv", str(csv_path), "--audio-root", str(root),
            "--model-dir", str(model_dir), "--n-jobs", "4"]
@@ -381,7 +417,7 @@ def api_write_start(request: Request, body: dict = {}):
     root, _, mode = active_ctx(request)
     if not root or not os.path.isdir(str(root)):
         raise HTTPException(400, "先设置音乐目录喵")
-    model_dir = (root / "model_dir") if mode == "cloud" else (PROJECT / "model_dir")
+    model_dir = (root / "model_dir") if mode == "cloud" else (DATA / "model_dir")
     md = str(body.get("model_dir") or "").strip()
     if md:
         p = Path(md).resolve()
@@ -538,7 +574,7 @@ _HUB_CACHE = {"at": 0.0, "items": None}
 
 def _model_dir_for(request: Request):
     root, _, mode = active_ctx(request)
-    return (root / "model_dir") if mode == "cloud" else (PROJECT / "model_dir")
+    return (root / "model_dir") if mode == "cloud" else (DATA / "model_dir")
 
 
 def _sha256_file(p):
@@ -612,7 +648,7 @@ def api_model_pack(request: Request, body: dict = {}):
     if body.get("publish_tracks"):
         cmd.append("--publish-tracks")
     try:
-        r = subprocess.run(cmd, cwd=str(PROJECT), capture_output=True, timeout=600)
+        r = subprocess.run(cmd, cwd=str(DATA), capture_output=True, timeout=600)
     except subprocess.TimeoutExpired:
         os.unlink(tmp.name)
         raise HTTPException(400, "打包超时喵：曲库太大，歌单公开先关掉试试")

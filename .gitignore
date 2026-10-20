@@ -31,3 +31,8 @@ _oof_pred_*.npy
 *.ape
 *.ogg
 *.wv
+
+# 网页版的运行时状态（含本机音乐库路径、上传会话、日志）
+web/server_config.json
+web/server_logs/
+web/uploads/

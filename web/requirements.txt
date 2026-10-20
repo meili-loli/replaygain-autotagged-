@@ -1,5 +1,13 @@
-fastapi>=0.110
-uvicorn>=0.29
+# 网页版依赖
+#
+# 注意：不要把 fastapi 的下限写太低（比如 >=0.110）。旧版 fastapi 要求
+# starlette<0.38，和新版 starlette 的可安装版本对不上，pip 会报
+#   ResolutionImpossible / no matching distributions available for starlette
+# 这里是实际验证过能装上的组合（2026-10 实测）：
+#   fastapi 0.151.0 / starlette 1.9.0 / uvicorn 0.54.0 / pydantic 2.14.1
+fastapi>=0.115
+starlette>=0.40
+uvicorn>=0.30
 mutagen>=1.47
 python-multipart>=0.0.9
 pyjwt>=2.8
